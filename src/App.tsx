@@ -38,16 +38,31 @@ const AppContent: React.FC = () => {
     
     try {
       hasLoadAttempted.current = true;
+      
+      // Check if we're in Tauri environment
+      if (typeof window === 'undefined' || !window.__TAURI__) {
+        console.warn("Not running in Tauri environment - using empty product list");
+        setProducts([]);
+        return;
+      }
+      
       const result = await invoke<Product[]>("get_products");
       setProducts(result);
       console.log("Loaded products count:", result.length);
     } catch (error) {
       console.error("Failed to load products:", error);
-      message.error("加載產品失敗");
+      
+      // Only show error if we're actually in Tauri environment
+      if (typeof window !== 'undefined' && window.__TAURI__) {
+        message.error("加載產品失敗");
+      } else {
+        console.warn("API call failed - not in Tauri environment");
+        setProducts([]);
+      }
     } finally {
       setInitialLoading(false);
     }
-  }, []);
+  }, [message]);
 
   // Load products from database on component mount
   useEffect(() => {
@@ -70,6 +85,12 @@ const AppContent: React.FC = () => {
         date: values.date ? dayjs(values.date).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
         remark: values.remark || "",
       };
+      
+      // Check if we're in Tauri environment
+      if (typeof window === 'undefined' || !window.__TAURI__) {
+        message.warning("無法保存產品 - 請在 Tauri 應用中運行");
+        return;
+      }
       
       // Save to database via Tauri
       const savedProduct = await invoke<Product>("save_product", { product: productInput });
@@ -100,6 +121,12 @@ const AppContent: React.FC = () => {
 
   const handleDeleteProduct = useCallback(async (id: number) => {
     try {
+      // Check if we're in Tauri environment
+      if (typeof window === 'undefined' || !window.__TAURI__) {
+        message.warning("無法刪除產品 - 請在 Tauri 應用中運行");
+        return;
+      }
+      
       await invoke("delete_product", { id });
       setProducts(prev => prev.filter(p => p.id !== id));
       message.success("產品刪除成功！");
@@ -107,7 +134,7 @@ const AppContent: React.FC = () => {
       console.error("Failed to delete product:", error);
       message.error("刪除產品失敗");
     }
-  }, []);
+  }, [message]);
 
   useEffect(() => {
     form.validateFields([["source", "address"]]);
