@@ -97,15 +97,8 @@ export const fetchJDProductInfo = async (url: string): Promise<ProductInfo | nul
       };
       
     } catch (fetchError) {
-      console.warn("Failed to fetch from proxy, using mock data for demonstration:", fetchError);
-      
-      // Fallback: Return mock data based on product ID for demonstration
-      // In a real implementation, you might use a backend service or different approach
-      const mockData = getMockProductData(productId);
-      return {
-        ...mockData,
-        cleanUrl
-      };
+      console.error("Failed to fetch product data:", fetchError);
+      return null;
     }
     
   } catch (error) {
@@ -114,25 +107,3 @@ export const fetchJDProductInfo = async (url: string): Promise<ProductInfo | nul
   }
 };
 
-// Mock data function for demonstration purposes
-function getMockProductData(productId: string): Omit<ProductInfo, 'cleanUrl'> {
-  // This is just for demonstration - in real implementation you'd fetch actual data
-  const mockProducts: Record<string, Omit<ProductInfo, 'cleanUrl'>> = {
-    '100226972106': {
-      title: 'Apple iPhone 15 Pro Max 256GB 深空黑色 5G手機',
-      brand: 'Apple',
-      price: 9999.00
-    },
-    '100012043978': {
-      title: '小米13 Ultra 徠卡專業攝影 16GB+512GB 黑色',
-      brand: '小米',
-      price: 5999.00
-    }
-  };
-  
-  return mockProducts[productId] || {
-    title: `JD產品 ${productId} (示例數據)`,
-    brand: '示例品牌',
-    price: 299.99
-  };
-}

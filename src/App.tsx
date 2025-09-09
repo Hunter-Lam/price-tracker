@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { Button, DatePicker, Form, FormProps, Input, InputNumber, Select, Row, Col, Card, Space, Typography, ConfigProvider, theme, message } from "antd";
 import dayjs from "dayjs";
 import { invoke } from "@tauri-apps/api/core";
-import { mockTauriApi, isTauriEnvironment } from "./utils/mockTauri";
 import type { FormData, Product, ProductInput } from "./types";
 import { CATEGORIES } from "./constants";
 import { SourceInput, DiscountSection, DiscountParser, ProductTable, ColumnController, ThemeToggle, PriceHistoryChart } from "./components";
@@ -15,6 +14,8 @@ const App: React.FC = () => {
   const [sourceTypeRule, setSourceTypeRule] = useState<Array<{ type: string }>>([{ type: "url" }]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const hasLoadAttempted = useRef(false);
   
   // Column visibility configuration
   const [columnConfig, setColumnConfig] = useState<ColumnConfig[]>([
@@ -31,24 +32,19 @@ const App: React.FC = () => {
   ]);
 
   const loadProducts = useCallback(async () => {
+    // Prevent duplicate calls in StrictMode
+    if (hasLoadAttempted.current) return;
+    
     try {
-      const isTauri = isTauriEnvironment();
-      console.log("Environment detection:", {
-        isTauri,
-        hasWindow: typeof window !== 'undefined',
-        hasTauriObject: typeof window !== 'undefined' && !!(window as any).__TAURI__,
-        hasTauriInternals: typeof window !== 'undefined' && !!(window as any).__TAURI_INTERNALS__,
-        hasTauriMetadata: typeof window !== 'undefined' && !!(window as any).__TAURI_METADATA__,
-        userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'N/A'
-      });      
-      const api = isTauri ? { invoke } : mockTauriApi;
-      const result = await api.invoke<Product[]>("get_products");
+      hasLoadAttempted.current = true;
+      const result = await invoke<Product[]>("get_products");
       setProducts(result);
-      
       console.log("Loaded products count:", result.length);
     } catch (error) {
       console.error("Failed to load products:", error);
       message.error("加載產品失敗");
+    } finally {
+      setInitialLoading(false);
     }
   }, []);
 
@@ -74,9 +70,8 @@ const App: React.FC = () => {
         remark: values.remark || "",
       };
       
-      // Save to database via Tauri or mock
-      const api = isTauriEnvironment() ? { invoke } : mockTauriApi;
-      const savedProduct = await api.invoke<Product>("save_product", { product: productInput });
+      // Save to database via Tauri
+      const savedProduct = await invoke<Product>("save_product", { product: productInput });
       
       // Update local state
       setProducts(prev => [savedProduct, ...prev]);
@@ -104,8 +99,7 @@ const App: React.FC = () => {
 
   const handleDeleteProduct = useCallback(async (id: number) => {
     try {
-      const api = isTauriEnvironment() ? { invoke } : mockTauriApi;
-      await api.invoke("delete_product", { id });
+      await invoke("delete_product", { id });
       setProducts(prev => prev.filter(p => p.id !== id));
       message.success("產品刪除成功！");
     } catch (error) {
