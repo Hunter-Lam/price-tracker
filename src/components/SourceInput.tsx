@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Form, Input, Select, message } from "antd";
+import { Button, Form, Input, Select, Space, message } from "antd";
 import type { FormInstance } from "antd";
 import { SOURCES } from "../constants";
 import { formatUrl } from "../utils/urlFormatter";
@@ -74,7 +74,7 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
 
   return (
     <Form.Item label="產品來源">
-      <Input.Group compact>
+      <Space.Compact style={{ width: '100%' }}>
         <Form.Item noStyle name={["source", "type"]} initialValue={SOURCES[0]}>
           <Select 
             style={{ width: 120 }}
@@ -100,7 +100,7 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
         >
           解析
         </Button>
-      </Input.Group>
+      </Space.Compact>
     </Form.Item>
   );
 };
