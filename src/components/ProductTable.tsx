@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Table, TableColumnsType, Typography, Tag, Space, Button, Popconfirm, Row, Col, message } from "antd";
+import { Table, TableColumnsType, Typography, Tag, Space, Button, Popconfirm, Row, Col, App } from "antd";
 import { LinkOutlined, DeleteOutlined, DownloadOutlined } from "@ant-design/icons";
 import { Product } from "../types";
 import { ColumnConfig } from "./ColumnController";
@@ -14,6 +14,7 @@ interface ProductTableProps {
 }
 
 const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibleColumns, columnController }) => {
+  const { message } = App.useApp();
   // Generate filter options from data
   const filterOptions = useMemo(() => {
     const brands = Array.from(new Set(data.map(item => item.brand))).sort();

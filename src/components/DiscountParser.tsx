@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Input, Space, Typography, Card, message, Divider, Alert } from "antd";
+import { Button, Input, Space, Typography, Card, App, Divider, Alert } from "antd";
 import { FileTextOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import type { FormInstance } from "antd";
 import type { DiscountItem } from "../types";
@@ -699,6 +699,7 @@ const isCalculationAccurate = (result: ParsedDiscount): boolean => {
 
 // ===== REACT COMPONENT =====
 const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsedDiscounts }) => {
+  const { message } = App.useApp();
   const [inputText, setInputText] = useState("");
   const [parsedResults, setParsedResults] = useState<ParsedDiscount[]>([]);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);

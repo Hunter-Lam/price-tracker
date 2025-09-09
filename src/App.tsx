@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { Button, DatePicker, Form, FormProps, Input, InputNumber, Select, Row, Col, Card, Space, Typography, ConfigProvider, theme, message } from "antd";
+import { Button, DatePicker, Form, FormProps, Input, InputNumber, Select, Row, Col, Card, Space, Typography, ConfigProvider, theme, App as AntdApp } from "antd";
 import dayjs from "dayjs";
 import { invoke } from "@tauri-apps/api/core";
 import type { FormData, Product, ProductInput } from "./types";
@@ -8,8 +8,9 @@ import { SourceInput, DiscountSection, DiscountParser, ProductTable, ColumnContr
 import type { ColumnConfig } from "./components/ColumnController";
 import { useTheme } from "./contexts/ThemeContext";
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const { message } = AntdApp.useApp();
   const [form] = Form.useForm();
   const [sourceTypeRule, setSourceTypeRule] = useState<Array<{ type: string }>>([{ type: "url" }]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -113,19 +114,10 @@ const App: React.FC = () => {
   }, [sourceTypeRule, form]);
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        token: {
-          colorPrimary: '#1890ff',
-          borderRadius: 8,
-        },
-      }}
-    >
-      <div className="app-container" style={{ 
-        minHeight: '100vh', 
-        padding: '24px 0'
-      }}>
+    <div className="app-container" style={{ 
+      minHeight: '100vh', 
+      padding: '24px 0'
+    }}>
         <div className="container">
           <Row justify="center">
             <Col xs={24} sm={24} md={24} lg={24} xl={20} xxl={18}>
@@ -318,6 +310,25 @@ const App: React.FC = () => {
           </Row>
         </div>
       </div>
+  );
+};
+
+const App: React.FC = () => {
+  const { isDarkMode } = useTheme();
+  
+  return (
+    <ConfigProvider
+      theme={{
+        algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        token: {
+          colorPrimary: '#1890ff',
+          borderRadius: 8,
+        },
+      }}
+    >
+      <AntdApp>
+        <AppContent />
+      </AntdApp>
     </ConfigProvider>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Form, Input, Select, Space, message } from "antd";
+import { Button, Form, Input, Select, Space, App } from "antd";
 import type { FormInstance } from "antd";
 import { SOURCES } from "../constants";
 import { formatUrl } from "../utils/urlFormatter";
@@ -12,6 +12,7 @@ interface SourceInputProps {
 
 const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) => {
   const [loading, setLoading] = useState(false);
+  const { message } = App.useApp();
 
   const isUrl = (value: string) => /^https?:\/\/|www\.|\.com|\.cn/.test(value);
 
