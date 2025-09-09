@@ -48,7 +48,6 @@ const AppContent: React.FC = () => {
       
       const result = await invoke<Product[]>("get_products");
       setProducts(result);
-      console.log("Loaded products count:", result.length);
     } catch (error) {
       console.error("Failed to load products:", error);
       
