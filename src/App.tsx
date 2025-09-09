@@ -206,7 +206,6 @@ const App: React.FC = () => {
                   <Form.Item
                     name="date"
                     label="日期"
-                    initialValue={dayjs()}
                   >
                     <DatePicker style={{ width: "100%" }} />
                   </Form.Item>
