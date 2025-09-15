@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Button, Form, Input, Select, Space, App } from "antd";
 import type { FormInstance } from "antd";
-import { SOURCES } from "../constants";
+import { useTranslation } from 'react-i18next';
+import { SOURCES, SOURCE_KEYS } from "../constants";
 import { formatUrl } from "../utils/urlFormatter";
 import { fetchJDProductInfo } from "../utils/urlParser";
 
@@ -13,6 +14,7 @@ interface SourceInputProps {
 const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) => {
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
+  const { t } = useTranslation();
 
   const isUrl = (value: string) => /^https?:\/\/|www\.|\.com|\.cn/.test(value);
 
@@ -28,9 +30,9 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
         form.setFieldValue(["source", "address"], formattedUrl);
         
         if (formattedUrl !== value) {
-          message.success("URL 已自動格式化並複製");
+          message.success(t('source.urlAutoFormatted'));
         } else {
-          message.success("URL 已複製到剪貼板");
+          message.success(t('source.urlCopied'));
         }
       }
     } catch (error) {
@@ -49,7 +51,7 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
       form.setFieldValue(["source", "address"], formattedUrl);
       
       if (formattedUrl.includes("item.jd.com")) {
-        message.loading("正在獲取產品信息...");
+        message.loading(t('source.fetchingProductInfo'));
         
         const productInfo = await fetchJDProductInfo(formattedUrl);
         
@@ -59,27 +61,30 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
             brand: productInfo.brand,
             price: productInfo.price,
           });
-          message.success("產品信息獲取成功！");
+          message.success(t('source.productInfoSuccess'));
         } else {
-          message.warning("無法獲取產品信息，請手動填寫");
+          message.warning(t('source.productInfoFailed'));
         }
       } else {
-        message.info("URL 已清理，請手動填寫產品信息");
+        message.info(t('source.urlCleaned'));
       }
     } catch (error) {
-      message.error("解析 URL 時發生錯誤");
+      message.error(t('source.parseError'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Form.Item label="產品來源">
+    <Form.Item label={t('source.productSource')}>
       <Space.Compact style={{ width: '100%' }}>
         <Form.Item noStyle name={["source", "type"]} initialValue={SOURCES[0]}>
           <Select 
             style={{ width: 120 }}
-            options={SOURCES.map(v => ({ label: v, value: v }))}
+            options={SOURCE_KEYS.map((key, index) => ({ 
+              label: t(`constants.sources.${key}`), 
+              value: SOURCES[index] 
+            }))}
             onChange={(value: string) => {
               const rule = value === SOURCES[0] ? [{ type: "url" }] : [{ type: "string" }];
               onSourceTypeChange(rule);
@@ -88,7 +93,7 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
         </Form.Item>
         <Form.Item noStyle name={["source", "address"]}>
           <Input 
-            placeholder="輸入連結或地址" 
+            placeholder={t('source.placeholder')} 
             style={{ width: 'calc(100% - 180px)' }}
             onBlur={(e) => autoCopyUrl(e.target.value)}
           />
@@ -99,7 +104,7 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
           loading={loading}
           style={{ width: 60 }}
         >
-          解析
+          {t('source.parse')}
         </Button>
       </Space.Compact>
     </Form.Item>

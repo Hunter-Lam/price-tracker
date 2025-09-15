@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Checkbox, Space, Popover } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 export interface ColumnConfig {
   key: string;
@@ -17,6 +18,7 @@ const ColumnController: React.FC<ColumnControllerProps> = ({
   columns,
   onColumnChange,
 }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   const handleColumnToggle = (key: string, checked: boolean) => {
@@ -45,14 +47,14 @@ const ColumnController: React.FC<ColumnControllerProps> = ({
   return (
     <Popover
       content={content}
-      title="選擇顯示列"
+      title={t('columnController.selectDisplayColumns')}
       trigger="click"
       open={open}
       onOpenChange={setOpen}
       placement="bottomLeft"
     >
       <Button icon={<SettingOutlined />} size="small">
-        列設置
+        {t('columnController.columnSettings')}
       </Button>
     </Popover>
   );

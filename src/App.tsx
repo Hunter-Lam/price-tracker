@@ -1,35 +1,42 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { Button, DatePicker, Form, FormProps, Input, InputNumber, Select, Row, Col, Card, Space, Typography, ConfigProvider, theme, App as AntdApp } from "antd";
+import zhCN from 'antd/locale/zh_CN';
+import enUS from 'antd/locale/en_US';
 import dayjs from "dayjs";
 import { invoke } from "@tauri-apps/api/core";
+import { useTranslation } from 'react-i18next';
 import type { FormData, Product, ProductInput } from "./types";
-import { CATEGORIES } from "./constants";
-import { SourceInput, DiscountSection, DiscountParser, ProductTable, ColumnController, ThemeToggle, PriceHistoryChart } from "./components";
+import { CATEGORIES, CATEGORY_KEYS } from "./constants";
+import { SourceInput, DiscountSection, DiscountParser, ProductTable, ColumnController, ThemeToggle, LanguageToggle, PriceHistoryChart } from "./components";
 import type { ColumnConfig } from "./components/ColumnController";
 import { useTheme } from "./contexts/ThemeContext";
+import { useLanguage } from "./contexts/LanguageContext";
+import { useDocumentTitle } from "./hooks/useDocumentTitle";
 
 const AppContent: React.FC = () => {
-  const { isDarkMode } = useTheme();
   const { message } = AntdApp.useApp();
+  const { t } = useTranslation();
   const [form] = Form.useForm();
+  
+  // Update document title when language changes
+  useDocumentTitle();
   const [sourceTypeRule, setSourceTypeRule] = useState<Array<{ type: string }>>([{ type: "url" }]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
   const hasLoadAttempted = useRef(false);
   
   // Column visibility configuration
   const [columnConfig, setColumnConfig] = useState<ColumnConfig[]>([
     { key: "id", title: "ID", visible: true },
-    { key: "title", title: "產品標題", visible: true },
-    { key: "brand", title: "品牌", visible: true },
-    { key: "type", title: "類型", visible: true },
-    { key: "price", title: "價格", visible: true },
-    { key: "specification", title: "規格", visible: true },
-    { key: "date", title: "日期", visible: true },
-    { key: "remark", title: "備註", visible: true },
-    { key: "created_at", title: "創建時間", visible: true },
-    { key: "action", title: "操作", visible: true },
+    { key: "title", title: t('table.title'), visible: true },
+    { key: "brand", title: t('table.brand'), visible: true },
+    { key: "type", title: t('table.type'), visible: true },
+    { key: "price", title: t('table.price'), visible: true },
+    { key: "specification", title: t('table.specification'), visible: true },
+    { key: "date", title: t('table.date'), visible: true },
+    { key: "remark", title: t('table.remark'), visible: true },
+    { key: "created_at", title: t('table.createdAt'), visible: true },
+    { key: "action", title: t('table.actions'), visible: true },
   ]);
 
   const loadProducts = useCallback(async () => {
@@ -40,7 +47,7 @@ const AppContent: React.FC = () => {
       hasLoadAttempted.current = true;
       
       // Check if we're in Tauri environment
-      if (typeof window === 'undefined' || !window.__TAURI__) {
+      if (typeof window === 'undefined' || !(window as any).__TAURI__) {
         console.warn("Not running in Tauri environment - using empty product list");
         setProducts([]);
         return;
@@ -52,14 +59,12 @@ const AppContent: React.FC = () => {
       console.error("Failed to load products:", error);
       
       // Only show error if we're actually in Tauri environment
-      if (typeof window !== 'undefined' && window.__TAURI__) {
-        message.error("加載產品失敗");
+      if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+        message.error(t('messages.loadProductsFailed'));
       } else {
         console.warn("API call failed - not in Tauri environment");
         setProducts([]);
       }
-    } finally {
-      setInitialLoading(false);
     }
   }, [message]);
 
@@ -86,8 +91,8 @@ const AppContent: React.FC = () => {
       };
       
       // Check if we're in Tauri environment
-      if (typeof window === 'undefined' || !window.__TAURI__) {
-        message.warning("無法保存產品 - 請在 Tauri 應用中運行");
+      if (typeof window === 'undefined' || !(window as any).__TAURI__) {
+        message.warning(t('messages.notInTauriEnvironment'));
         return;
       }
       
@@ -101,10 +106,10 @@ const AppContent: React.FC = () => {
       form.resetFields();
       form.setFieldValue("date", dayjs());
       
-      message.success("產品保存成功！");
+      message.success(t('messages.productSaved'));
     } catch (error) {
       console.error("Failed to save product:", error);
-      message.error("保存產品失敗");
+      message.error(t('messages.productSaveFailed'));
     } finally {
       setLoading(false);
     }
@@ -121,17 +126,17 @@ const AppContent: React.FC = () => {
   const handleDeleteProduct = useCallback(async (id: number) => {
     try {
       // Check if we're in Tauri environment
-      if (typeof window === 'undefined' || !window.__TAURI__) {
-        message.warning("無法刪除產品 - 請在 Tauri 應用中運行");
+      if (typeof window === 'undefined' || !(window as any).__TAURI__) {
+        message.warning(t('messages.notInTauriEnvironmentDelete'));
         return;
       }
       
       await invoke("delete_product", { id });
       setProducts(prev => prev.filter(p => p.id !== id));
-      message.success("產品刪除成功！");
+      message.success(t('messages.productDeleted'));
     } catch (error) {
       console.error("Failed to delete product:", error);
-      message.error("刪除產品失敗");
+      message.error(t('messages.productDeleteFailed'));
     }
   }, [message]);
 
@@ -155,17 +160,20 @@ const AppContent: React.FC = () => {
                     margin: 0
                   }}
                 >
-                  產品管理系統
+                  {t('app.title')}
                 </Typography.Title>
               </Col>
               <Col>
-                <ThemeToggle />
+                <Space>
+                  <LanguageToggle />
+                  <ThemeToggle />
+                </Space>
               </Col>
             </Row>
             
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <Card 
-                title="新增產品" 
+                title={t('form.addProduct')} 
                 variant="outlined"
               >
                 <Form
@@ -190,19 +198,19 @@ const AppContent: React.FC = () => {
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="title"
-                    label="產品標題"
-                    rules={[{ required: true, message: "請輸入產品標題" }]}
+                    label={t('form.productTitle')}
+                    rules={[{ required: true, message: t('form.productTitleRequired') }]}
                   >
-                    <Input placeholder="請輸入產品標題" />
+                    <Input placeholder={t('form.productTitlePlaceholder')} />
                   </Form.Item>
                 </Col>
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="brand"
-                    label="品牌"
-                    rules={[{ required: true, message: "請輸入品牌" }]}
+                    label={t('form.brand')}
+                    rules={[{ required: true, message: t('form.brandRequired') }]}
                   >
-                    <Input placeholder="請輸入品牌" />
+                    <Input placeholder={t('form.brandPlaceholder')} />
                   </Form.Item>
                 </Col>
               </Row>
@@ -211,19 +219,22 @@ const AppContent: React.FC = () => {
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="type"
-                    label="產品類型"
-                    rules={[{ required: true, message: "請選擇產品類型" }]}
+                    label={t('form.productType')}
+                    rules={[{ required: true, message: t('form.productTypeRequired') }]}
                   >
                     <Select
-                      placeholder="請選擇產品類型"
-                      options={CATEGORIES.map(v => ({ label: v, value: v }))}
+                      placeholder={t('form.productTypePlaceholder')}
+                      options={CATEGORY_KEYS.map((key, index) => ({ 
+                        label: t(`constants.categories.${key}`), 
+                        value: CATEGORIES[index] 
+                      }))}
                     />
                   </Form.Item>
                 </Col>
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="date"
-                    label="日期"
+                    label={t('form.date')}
                   >
                     <DatePicker style={{ width: "100%" }} />
                   </Form.Item>
@@ -234,7 +245,7 @@ const AppContent: React.FC = () => {
                 <Col xs={24} sm={12}>
                   <Form.Item
                       name="originalPrice"
-                      label="原價"
+                      label={t('form.originalPrice')}
                   >
                     <InputNumber
                         style={{ width: "100%" }}
@@ -242,15 +253,15 @@ const AppContent: React.FC = () => {
                         precision={2}
                         placeholder="0.00"
                         min={0}
-                        addonAfter="元"
+                        addonAfter={t('form.currency')}
                     />
                   </Form.Item>
                 </Col>
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="price"
-                    label="最終價格"
-                    rules={[{ required: true, message: "請輸入最終價格" }]}
+                    label={t('form.finalPrice')}
+                    rules={[{ required: true, message: t('form.finalPriceRequired') }]}
                   >
                     <InputNumber
                       style={{ width: "100%" }}
@@ -258,7 +269,7 @@ const AppContent: React.FC = () => {
                       precision={2}
                       placeholder="0.00"
                       min={0}
-                      addonAfter="元"
+                      addonAfter={t('form.currency')}
                     />
                   </Form.Item>
                 </Col>
@@ -270,22 +281,22 @@ const AppContent: React.FC = () => {
 
               <Form.Item
                 name="specification"
-                label="產品規格"
+                label={t('form.specification')}
               >
                 <Input.TextArea 
                   rows={3} 
-                  placeholder="請輸入產品規格說明" 
+                  placeholder={t('form.specificationPlaceholder')} 
                   autoSize
                 />
               </Form.Item>
 
               <Form.Item
                 name="remark"
-                label="備註"
+                label={t('form.remark')}
               >
                 <Input.TextArea 
                   rows={3} 
-                  placeholder="請輸入備註" 
+                  placeholder={t('form.remarkPlaceholder')} 
                   autoSize
                 />
               </Form.Item>
@@ -298,7 +309,7 @@ const AppContent: React.FC = () => {
                     size="large"
                     loading={loading}
                   >
-                    提交
+                    {t('form.submit')}
                   </Button>
                   <Button 
                     onClick={() => {
@@ -307,7 +318,7 @@ const AppContent: React.FC = () => {
                     }}
                     size="large"
                   >
-                    清空
+                    {t('form.clear')}
                   </Button>
                 </Space>
               </Form.Item>
@@ -341,9 +352,13 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   const { isDarkMode } = useTheme();
+  const { language } = useLanguage();
+  
+  const antdLocale = language === 'en-US' ? enUS : zhCN;
   
   return (
     <ConfigProvider
+      locale={antdLocale}
       theme={{
         algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {

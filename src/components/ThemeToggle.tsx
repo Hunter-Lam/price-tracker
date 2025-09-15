@@ -1,13 +1,15 @@
 import React from 'react';
 import { Button, Tooltip } from 'antd';
 import { SunOutlined, MoonOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../contexts/ThemeContext';
 
 const ThemeToggle: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const { t } = useTranslation();
 
   return (
-    <Tooltip title={isDarkMode ? '切換到淺色模式' : '切換到深色模式'}>
+    <Tooltip title={isDarkMode ? t('theme.switchToLight') : t('theme.switchToDark')}>
       <Button
         type="text"
         icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
@@ -19,7 +21,7 @@ const ThemeToggle: React.FC = () => {
           gap: '4px',
         }}
       >
-        {isDarkMode ? '淺色' : '深色'}
+        {isDarkMode ? t('theme.light') : t('theme.dark')}
       </Button>
     </Tooltip>
   );

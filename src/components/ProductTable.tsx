@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Table, TableColumnsType, Typography, Tag, Space, Button, Popconfirm, Row, Col, App } from "antd";
 import { LinkOutlined, DeleteOutlined, DownloadOutlined } from "@ant-design/icons";
+import { useTranslation } from 'react-i18next';
 import { Product } from "../types";
 import { ColumnConfig } from "./ColumnController";
 import { exportToCSV, getVisibleColumnKeys } from "../utils/csvExport";
@@ -15,6 +16,7 @@ interface ProductTableProps {
 
 const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibleColumns, columnController }) => {
   const { message } = App.useApp();
+  const { t } = useTranslation();
   // Generate filter options from data
   const filterOptions = useMemo(() => {
     const brands = Array.from(new Set(data.map(item => item.brand))).sort();
@@ -31,26 +33,26 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
   // CSV export function
   const handleExportCSV = () => {
     if (data.length === 0) {
-      message.warning("沒有數據可以導出");
+      message.warning(t('messages.noDataToExport'));
       return;
     }
 
     try {
       const visibleColumnKeys = getVisibleColumnKeys(visibleColumns);
       exportToCSV(data, {
-        filename: '產品列表',
+        filename: t('table.productList'),
         visibleColumns: visibleColumnKeys
       });
-      message.success(`成功導出 ${data.length} 項產品數據`);
+      message.success(t('messages.exportSuccess', { count: data.length }));
     } catch (error) {
       console.error('CSV export error:', error);
-      message.error('導出失敗，請重試');
+      message.error(t('messages.exportFailed'));
     }
   };
 
   const columns: TableColumnsType<Product> = [
     {
-      title: "ID",
+      title: t('table.id'),
       dataIndex: "id",
       key: "id",
       width: 60,
@@ -59,7 +61,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       ),
     },
     {
-      title: "產品標題",
+      title: t('table.title'),
       dataIndex: "title",
       key: "title",
       width: 200,
@@ -73,7 +75,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       ),
     },
     {
-      title: "品牌",
+      title: t('table.brand'),
       dataIndex: "brand",
       key: "brand",
       width: 120,
@@ -85,7 +87,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       ),
     },
     {
-      title: "類型",
+      title: t('table.type'),
       dataIndex: "type",
       key: "type",
       width: 120,
@@ -97,7 +99,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       ),
     },
     {
-      title: "價格",
+      title: t('table.price'),
       dataIndex: "price",
       key: "price",
       width: 100,
@@ -110,7 +112,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       ),
     },
     {
-      title: "規格",
+      title: t('table.specification'),
       dataIndex: "specification",
       key: "specification",
       width: 150,
@@ -122,7 +124,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       ),
     },
     {
-      title: "日期",
+      title: t('table.date'),
       dataIndex: "date",
       key: "date",
       width: 120,
@@ -134,7 +136,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       ),
     },
     {
-      title: "備註",
+      title: t('table.remark'),
       dataIndex: "remark",
       key: "remark",
       width: 150,
@@ -146,7 +148,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       ),
     },
     {
-      title: "創建時間",
+      title: t('table.createdAt'),
       dataIndex: "created_at",
       key: "created_at",
       width: 150,
@@ -158,7 +160,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       ),
     },
     {
-      title: "操作",
+      title: t('table.actions'),
       key: "action",
       width: 120,
       fixed: 'right',
@@ -170,23 +172,23 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
               size="small"
               icon={<LinkOutlined />}
               onClick={() => window.open(record.url, '_blank', 'noopener,noreferrer')}
-              title="訪問網站"
+              title={t('table.visitWebsite')}
             />
           )}
           {onDelete && record.id && (
             <Popconfirm
-              title="確認刪除"
-              description="確定要刪除這個產品嗎？"
+              title={t('table.confirmDelete')}
+              description={t('table.confirmDeleteDesc')}
               onConfirm={() => onDelete(record.id!)}
-              okText="確認"
-              cancelText="取消"
+              okText={t('table.confirm')}
+              cancelText={t('table.cancel')}
             >
               <Button 
                 type="text" 
                 danger 
                 size="small"
                 icon={<DeleteOutlined />}
-                title="刪除產品"
+                title={t('table.deleteProduct')}
               />
             </Popconfirm>
           )}
@@ -215,7 +217,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
           <Typography.Title level={3} style={{ margin: 0 }}>
-            產品列表 ({data.length} 項)
+            {t('table.productList')} ({data.length} {t('table.items')})
           </Typography.Title>
         </Col>
         <Col>
@@ -226,7 +228,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
               onClick={handleExportCSV}
               disabled={data.length === 0}
             >
-              導出 CSV
+              {t('table.exportCSV')}
             </Button>
             {columnController}
           </Space>
@@ -241,7 +243,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
           showQuickJumper: true,
           responsive: true,
           showTotal: (total, range) => 
-            `第 ${range[0]}-${range[1]} 項，共 ${total} 項`,
+            t('table.paginationTotal', { start: range[0], end: range[1], total }),
         }}
         scroll={{ x: 1200 }}
         size="middle"

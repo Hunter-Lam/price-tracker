@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Input, Space, Typography, Card, App, Divider, Alert } from "antd";
 import { FileTextOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { useTranslation } from 'react-i18next';
 import type { FormInstance } from "antd";
 import type { DiscountItem } from "../types";
 
@@ -700,13 +701,14 @@ const isCalculationAccurate = (result: ParsedDiscount): boolean => {
 // ===== REACT COMPONENT =====
 const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsedDiscounts }) => {
   const { message } = App.useApp();
+  const { t } = useTranslation();
   const [inputText, setInputText] = useState("");
   const [parsedResults, setParsedResults] = useState<ParsedDiscount[]>([]);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
 
   const handleParse = () => {
     if (!inputText.trim()) {
-      message.warning("請輸入要解析的優惠資訊");
+      message.warning(t('discountParser.inputRequired'));
       return;
     }
 
@@ -722,9 +724,9 @@ const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsed
         const calculationAccurate = isCalculationAccurate(firstResult);
         
         if (calculationAccurate) {
-          message.success("成功解析優惠資訊");
+          message.success(t('discountParser.parseSuccess'));
         } else {
-          message.warning("解析完成，但計算結果與實際價格不符，請檢查數據");
+          message.warning(t('discountParser.calculationMismatch'));
         }
         
         // Apply the first result to the form
@@ -757,12 +759,12 @@ const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsed
         
         form.setFieldsValue(fieldsToUpdate);
       } else {
-        message.warning("未能解析出有效的優惠資訊");
+        message.warning(t('discountParser.noValidInfo'));
       }
     } catch (error) {
       console.error("Parse error:", error);
-      message.error("解析失敗，請檢查輸入格式");
-      setParseWarnings(["解析過程中發生錯誤，請檢查輸入格式"]);
+      message.error(t('discountParser.parseError'));
+      setParseWarnings([t('discountParser.parseErrorDetail')]);
     }
   };
 
@@ -789,16 +791,16 @@ const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsed
     }
     
     form.setFieldsValue(fieldsToUpdate);
-    message.success("已應用該優惠資訊到表單");
+    message.success(t('discountParser.applied'));
   };
 
   return (
-    <Card title="優惠資訊解析器" size="small" style={{ marginBottom: 16 }}>
+    <Card title={t('discountParser.title')} size="small" style={{ marginBottom: 16 }}>
       <Space direction="vertical" style={{ width: '100%' }}>
         <Input.TextArea
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="請貼上商品的優惠資訊"
+          placeholder={t('discountParser.placeholder')}
           rows={6}
           autoSize={{ minRows: 6, maxRows: 12 }}
         />
@@ -810,16 +812,16 @@ const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsed
             onClick={handleParse}
             disabled={!inputText.trim()}
           >
-            解析優惠資訊
+            {t('discountParser.parseButton')}
           </Button>
           <Button onClick={handleClear}>
-            清空
+            {t('discountParser.clear')}
           </Button>
         </Space>
 
         {parseWarnings.length > 0 && (
           <Alert
-            message="解析警告"
+            message={t('discountParser.parseWarning')}
             description={
               <ul style={{ margin: 0, paddingLeft: 20 }}>
                 {parseWarnings.map((warning, index) => (
@@ -836,7 +838,7 @@ const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsed
 
         {parsedResults.length > 0 && (
           <>
-            <Divider orientation="left">解析結果</Divider>
+            <Divider orientation="left">{t('discountParser.parseResults')}</Divider>
             <Space direction="vertical" style={{ width: '100%' }}>
               {parsedResults.map((result, index) => (
                 <Card 
@@ -848,7 +850,7 @@ const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsed
                       size="small"
                       onClick={() => applyResult(result)}
                     >
-                      應用到表單
+                      {t('discountParser.applyToForm')}
                     </Button>
                   }
                 >
@@ -865,32 +867,32 @@ const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsed
                     )}
                     {result.finalPrice > 0 && (
                       <Typography.Text>
-                        <strong>最終價格:</strong> ¥{result.finalPrice}
+                        <strong>{t('discountParser.finalPrice')}:</strong> ¥{result.finalPrice}
                       </Typography.Text>
                     )}
                     {result.originalPrice > 0 && (
                       <Typography.Text>
-                        <strong>原價:</strong> ¥{result.originalPrice}
+                        <strong>{t('discountParser.originalPrice')}:</strong> ¥{result.originalPrice}
                       </Typography.Text>
                     )}
                     {result.savings && result.savings > 0 && (
                       <Typography.Text type="success">
-                        <strong>節省:</strong> ¥{result.savings.toFixed(2)} ({result.savingsPercentage}% off)
+                        <strong>{t('discountParser.savings')}:</strong> ¥{result.savings.toFixed(2)} ({result.savingsPercentage}% off)
                       </Typography.Text>
                     )}
                     {result.soldCount && (
                       <Typography.Text>
-                        <strong>銷量:</strong> {result.soldCount}
+                        <strong>{t('discountParser.soldCount')}:</strong> {result.soldCount}
                       </Typography.Text>
                     )}
                     {result.endTime && (
                       <Typography.Text>
-                        <strong>結束時間:</strong> {result.endTime}
+                        <strong>{t('discountParser.endTime')}:</strong> {result.endTime}
                       </Typography.Text>
                     )}
                     {result.discounts.length > 0 && (
                       <div>
-                        <Typography.Text strong>優惠詳情:</Typography.Text>
+                        <Typography.Text strong>{t('discountParser.discountDetails')}:</Typography.Text>
                         <ul style={{ margin: '4px 0', paddingLeft: 20 }}>
                           {result.discounts
                             .sort((a, b) => {

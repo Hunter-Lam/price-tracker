@@ -1,5 +1,6 @@
 import React from "react";
 import { InputNumber, Space } from "antd";
+import { useTranslation } from 'react-i18next';
 
 interface DiscountInputProps {
   format: string;
@@ -8,6 +9,7 @@ interface DiscountInputProps {
 }
 
 const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }) => {
+  const { t } = useTranslation();
   
   const renderDiscountFormat = () => {
     switch (format) {
@@ -18,8 +20,8 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
               min={0} 
               max={10} 
               precision={1} 
-              placeholder="折扣" 
-              addonAfter="折"
+              placeholder={t('discountInput.discount')} 
+              addonAfter={t('discountInput.discountUnit')}
               value={typeof value === 'number' ? value : undefined}
               onChange={(val) => onChange?.(val || 0)}
             />
@@ -32,16 +34,16 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
             <InputNumber 
               min={0}
               precision={0} 
-              placeholder="金額" 
-              addonBefore="滿"
-              addonAfter="元"
+              placeholder={t('discountInput.amount')} 
+              addonBefore={t('discountInput.min')}
+              addonAfter={t('discountInput.currency')}
             />
             <InputNumber 
               min={0}
               max={10} 
               precision={1} 
-              placeholder="折扣" 
-              addonAfter="折"
+              placeholder={t('discountInput.discount')} 
+              addonAfter={t('discountInput.discountUnit')}
             />
           </Space.Compact>
         );
@@ -63,9 +65,9 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
             <InputNumber 
               min={0}
               precision={0} 
-              placeholder="件數" 
-              addonBefore="滿"
-              addonAfter="件"
+              placeholder={t('discountInput.quantity')} 
+              addonBefore={t('discountInput.min')}
+              addonAfter={t('discountInput.quantityUnit')}
               value={minQuantity || undefined}
               onChange={(val1) => {
                 const newMinQuantity = val1 || 0;
@@ -77,8 +79,8 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
               min={0}
               max={10} 
               precision={1} 
-              placeholder="折扣" 
-              addonAfter="折"
+              placeholder={t('discountInput.discount')} 
+              addonAfter={t('discountInput.discountUnit')}
               value={discountRate || undefined}
               onChange={(val2) => {
                 const newDiscountRate = val2 || 0;
@@ -118,9 +120,9 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
             <InputNumber 
               min={0}
               precision={0} 
-              placeholder={isAmountBased ? "金額" : "件數"} 
-              addonBefore="每滿"
-              addonAfter={isAmountBased ? "元" : "件"}
+              placeholder={isAmountBased ? t('discountInput.amount') : t('discountInput.quantity')} 
+              addonBefore={t('discountInput.everyMin')}
+              addonAfter={isAmountBased ? t('discountInput.currency') : t('discountInput.quantityUnit')}
               value={everyQuantity || undefined}
               onChange={(val1) => {
                 const newEveryQuantity = val1 || 0;
@@ -133,9 +135,9 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
             <InputNumber 
               min={0}
               precision={0} 
-              placeholder="減額" 
-              addonBefore="減"
-              addonAfter="元"
+              placeholder={t('discountInput.reduction')} 
+              addonBefore={t('discountInput.reduce')}
+              addonAfter={t('discountInput.currency')}
               value={everyReduction || undefined}
               onChange={(val2) => {
                 const newEveryReduction = val2 || 0;
@@ -165,9 +167,9 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
             <InputNumber 
               min={0}
               precision={0} 
-              placeholder="金額" 
-              addonBefore="滿"
-              addonAfter="元"
+              placeholder={t('discountInput.amount')} 
+              addonBefore={t('discountInput.min')}
+              addonAfter={t('discountInput.currency')}
               value={minAmount || undefined}
               onChange={(val1) => {
                 const newMinAmount = val1 || 0;
@@ -178,9 +180,9 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
             <InputNumber 
               min={0}
               precision={0} 
-              placeholder="減額" 
-              addonBefore="減"
-              addonAfter="元"
+              placeholder={t('discountInput.reduction')} 
+              addonBefore={t('discountInput.reduce')}
+              addonAfter={t('discountInput.currency')}
               value={reductionAmount || undefined}
               onChange={(val2) => {
                 const newReductionAmount = val2 || 0;
@@ -198,8 +200,8 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
             <InputNumber 
               min={0}
               precision={2} 
-              placeholder="金額" 
-              addonAfter="元"
+              placeholder={t('discountInput.amount')} 
+              addonAfter={t('discountInput.currency')}
               value={typeof value === 'number' ? value : undefined}
               onChange={(val) => onChange?.(val || 0)}
             />
@@ -212,8 +214,8 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
             <InputNumber 
               min={0}
               precision={2} 
-              placeholder="金額" 
-              addonAfter="元"
+              placeholder={t('discountInput.amount')} 
+              addonAfter={t('discountInput.currency')}
               value={typeof value === 'number' ? value : undefined}
               onChange={(val) => onChange?.(val || 0)}
             />

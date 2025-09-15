@@ -2,7 +2,8 @@ import React from "react";
 import { Button, Form, Select, Space, theme } from "antd";
 import type { FormInstance } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { DISCOUNT_ORGANIZERS, DISCOUNT_METHODS } from "../constants";
+import { useTranslation } from 'react-i18next';
+import { DISCOUNT_ORGANIZERS, DISCOUNT_ORGANIZER_KEYS, DISCOUNT_METHODS, DISCOUNT_METHOD_KEYS } from "../constants";
 import DiscountInput from "./DiscountInput";
 
 interface DiscountSectionProps {
@@ -11,9 +12,10 @@ interface DiscountSectionProps {
 
 const DiscountSection: React.FC<DiscountSectionProps> = ({ form }) => {
   const { token } = theme.useToken();
+  const { t } = useTranslation();
   
   return (
-    <Form.Item name="discount" label="優惠">
+    <Form.Item name="discount" label={t('discount.title')}>
       <Form.List name="discount">
         {(fields, { add, remove }) => (
           <Space direction="vertical" style={{ width: '100%' }}>
@@ -29,13 +31,16 @@ const DiscountSection: React.FC<DiscountSectionProps> = ({ form }) => {
                   <Form.Item
                     {...restField}
                     name={[name, "discountOwner"]}
-                    rules={[{ required: true, message: "請選擇優惠提供者" }]}
+                    rules={[{ required: true, message: t('discount.providerRequired') }]}
                     style={{ marginBottom: 0, minWidth: 120 }}
                   >
                     <Select 
-                      placeholder="優惠提供者" 
+                      placeholder={t('discount.providerPlaceholder')} 
                       popupMatchSelectWidth={false} 
-                      options={DISCOUNT_ORGANIZERS.map(v => ({ label: v, value: v }))}
+                      options={DISCOUNT_ORGANIZER_KEYS.map((key, index) => ({ 
+                        label: t(`constants.discountOrganizers.${key}`), 
+                        value: DISCOUNT_ORGANIZERS[index] 
+                      }))}
                       style={{ width: 120 }}
                     />
                   </Form.Item>
@@ -43,13 +48,16 @@ const DiscountSection: React.FC<DiscountSectionProps> = ({ form }) => {
                   <Form.Item
                     {...restField}
                     name={[name, "discountType"]}
-                    rules={[{ required: true, message: "請選擇優惠類型" }]}
+                    rules={[{ required: true, message: t('discount.typeRequired') }]}
                     style={{ marginBottom: 0, minWidth: 120 }}
                   >
                     <Select 
-                      placeholder="優惠類型" 
+                      placeholder={t('discount.typePlaceholder')} 
                       popupMatchSelectWidth={false} 
-                      options={DISCOUNT_METHODS.map(v => ({ label: v, value: v }))}
+                      options={DISCOUNT_METHOD_KEYS.map((key, index) => ({ 
+                        label: t(`constants.discountMethods.${key}`), 
+                        value: DISCOUNT_METHODS[index] 
+                      }))}
                       style={{ width: 120 }}
                     />
                   </Form.Item>
@@ -57,7 +65,7 @@ const DiscountSection: React.FC<DiscountSectionProps> = ({ form }) => {
                   <Form.Item
                     {...restField}
                     name={[name, "discountValue"]}
-                    rules={[{ required: true, message: "請輸入優惠值" }]}
+                    rules={[{ required: true, message: t('discount.valueRequired') }]}
                     style={{ marginBottom: 0, minWidth: 200 }}
                   >
                     <DiscountInput 
@@ -86,7 +94,7 @@ const DiscountSection: React.FC<DiscountSectionProps> = ({ form }) => {
               icon={<PlusOutlined />}
               style={{ marginTop: 8 }}
             >
-              新增優惠
+              {t('discount.addDiscount')}
             </Button>
           </Space>
         )}

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, Typography, Space, Empty, AutoComplete, Button, Row, Col } from 'antd';
 import { ClearOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { Product } from '../types';
 import dayjs from 'dayjs';
 
@@ -15,6 +16,7 @@ interface ChartDataPoint {
 }
 
 const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
+  const { t } = useTranslation();
   const [searchFilters, setSearchFilters] = useState({
     product: '',
     brand: '',
@@ -196,7 +198,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
           padding: '10px',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
         }}>
-          <p style={{ margin: 0, fontWeight: 'bold' }}>{`日期: ${label}`}</p>
+          <p style={{ margin: 0, fontWeight: 'bold' }}>{`${t('priceHistory.date')}: ${label}`}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ margin: 0, color: entry.color }}>
               {`${entry.name}: ¥${entry.value?.toFixed(2) || 'N/A'}`}
@@ -209,17 +211,17 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
   };
 
   return (
-    <Card title="價格歷史趨勢圖" variant="outlined">
+    <Card title={t('priceHistory.title')} variant="outlined">
       <Space direction="vertical" style={{ width: '100%' }} size="large">
         {/* Search Filters */}
         <Row gutter={16} align="middle">
           <Col xs={24} sm={12} md={6}>
             <Space direction="vertical" style={{ width: '100%' }}>
-              <Typography.Text strong>類型</Typography.Text>
+              <Typography.Text strong>{t('priceHistory.type')}</Typography.Text>
               <AutoComplete
                 value={searchFilters.type}
                 onChange={(value) => handleFilterChange('type', value)}
-                placeholder="搜索類型"
+                placeholder={t('priceHistory.searchType')}
                 allowClear
                 options={filteredOptions.types.map(type => ({ value: type, label: type }))}
                 filterOption={(inputValue, option) =>
@@ -231,11 +233,11 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Space direction="vertical" style={{ width: '100%' }}>
-              <Typography.Text strong>品牌</Typography.Text>
+              <Typography.Text strong>{t('priceHistory.brand')}</Typography.Text>
               <AutoComplete
                 value={searchFilters.brand}
                 onChange={(value) => handleFilterChange('brand', value)}
-                placeholder="搜索品牌"
+                placeholder={t('priceHistory.searchBrand')}
                 allowClear
                 options={filteredOptions.brands.map(brand => ({ value: brand, label: brand }))}
                 filterOption={(inputValue, option) =>
@@ -247,11 +249,11 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Space direction="vertical" style={{ width: '100%' }}>
-              <Typography.Text strong>產品標題</Typography.Text>
+              <Typography.Text strong>{t('priceHistory.productTitle')}</Typography.Text>
               <AutoComplete
                 value={searchFilters.product}
                 onChange={(value) => handleFilterChange('product', value)}
-                placeholder="搜索產品標題"
+                placeholder={t('priceHistory.searchProduct')}
                 allowClear
                 options={filteredOptions.products.map(product => ({ value: product, label: product }))}
                 filterOption={(inputValue, option) =>
@@ -274,7 +276,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
               }}
               icon={<ClearOutlined />}
             >
-              清空所有篩選
+              {t('priceHistory.clearAllFilters')}
             </Button>
           </Col>
         </Row>
@@ -283,16 +285,16 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
         {chartData.length > 0 && (searchFilters.type || searchFilters.brand || searchFilters.product) && (
           <Space wrap>
             <Typography.Text style={{ color: '#722ed1' }}>
-              數據點數: {statistics.count}
+              {t('priceHistory.dataPoints')}: {statistics.count}
             </Typography.Text>
             <Typography.Text style={{ color: '#1890ff' }}>
-              平均價格: ¥{statistics.average.toFixed(2)}
+              {t('priceHistory.averagePrice')}: ¥{statistics.average.toFixed(2)}
             </Typography.Text>
             <Typography.Text style={{ color: '#52c41a' }}>
-              最低價格: ¥{statistics.min.toFixed(2)}
+              {t('priceHistory.minPrice')}: ¥{statistics.min.toFixed(2)}
             </Typography.Text>
             <Typography.Text style={{ color: '#f5222d' }}>
-              最高價格: ¥{statistics.max.toFixed(2)}
+              {t('priceHistory.maxPrice')}: ¥{statistics.max.toFixed(2)}
             </Typography.Text>
           </Space>
         )}
@@ -352,8 +354,8 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
           <Empty 
             description={
               !searchFilters.type && !searchFilters.brand && !searchFilters.product 
-                ? "請選擇篩選條件以查看價格趨勢圖" 
-                : "暫無價格數據"
+                ? t('priceHistory.noFiltersSelected') 
+                : t('priceHistory.noPriceData')
             }
             style={{ padding: '60px 0' }}
           />
