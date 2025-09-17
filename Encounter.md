@@ -4814,10 +4814,10 @@ Show in Reader mode:
 - [x] Rendered documentation comments
 - [x] Error and warning highlighting inspection widget
 - [ ] Font ligatures
-- [ ] Increased line height[atebay.md](../../../../Documents/atebay.md)
+- [ ] Increased line height
 - [x] Code vision hints for usages, inheritors, and related problems
 
-#### [IntelliJ IDEA] Keep jumping to error file[atebay.md](../../../../Documents/atebay.md)
+#### [IntelliJ IDEA] Keep jumping to error file
 
 Settings | Build, Execution, Deployment | Compiler
 
@@ -6021,13 +6021,77 @@ Never checkout or create new branch before
 git reset HEAD@{1}
 ```
 
-[Git] Git Clone Failed
+#### [Git] Git Clone Failed
 
 ```shell
 remote: Invalid username or password.
 ```
 
 password is token, not password. password is not allowed at company.
+
+#### [Git]
+
+```shell
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that a host key has just been changed.
+The fingerprint for the ECDSA key sent by the remote host is
+SHA256:<hash>.
+Please contact your system administrator.
+Add correct host key in /Users/<user>/.ssh/known_hosts to get rid of this message.
+Offending ED25519 key in /Users/<user>/.ssh/known_hosts:3
+Host key for github.com has changed and you have requested strict checking.
+Host key verification failed.
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+```
+
+⏺ To resolve this SSH host key verification error:
+
+  1. Remove the old host key:
+  ssh-keygen -R github.corp.com
+  2. Add the new host key:
+  ssh-keyscan -t ecdsa github.corp.com >> ~/.ssh/known_hosts
+  3. Try your git operation again
+
+  Alternatively, you can manually edit ~/.ssh/known_hosts and remove line 3 (the offending key), then retry your git command which will
+  prompt you to accept the new key.
+
+⏺ ssh-keygen -R Command Explanation
+
+  Command: ssh-keygen -R github.corp.com
+
+  Purpose: Removes a specific host's key from the SSH known_hosts file
+
+  Options:
+  - -R hostname - Removes all keys belonging to the specified hostname from the known_hosts file
+  - The command searches through ~/.ssh/known_hosts and removes any entries matching the hostname
+  - It creates a backup of the original file as known_hosts.old
+
+  ssh-keyscan Command Explanation
+
+  Command: ssh-keyscan -t ecdsa github.corp.com >> ~/.ssh/known_hosts
+
+  Purpose: Retrieves SSH public keys from a remote host and adds them to known_hosts
+
+  Options:
+  - -t ecdsa - Specifies the key type to retrieve (ecdsa, rsa, ed25519, etc.)
+  - >> ~/.ssh/known_hosts - Appends the output to the known_hosts file (using >> to append, not overwrite)
+
+  Alternative key types:
+  - -t rsa - RSA keys
+  - -t ed25519 - Ed25519 keys
+  - -t dsa - DSA keys
+
+  Why this works: The error occurs because the remote host's key changed, but your local known_hosts file still has the old key. Removing
+  the old key and adding the new one resolves the mismatch.
+
+
 
 #### [Linux/Unix/MacOS] Autocomplete Based on History?
 
