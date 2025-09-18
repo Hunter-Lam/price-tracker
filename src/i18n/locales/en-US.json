@@ -56,9 +56,7 @@
     "productSaveFailed": "Failed to save product",
     "productDeleted": "Product deleted successfully!",
     "productDeleteFailed": "Failed to delete product",
-    "loadProductsFailed": "Failed to load products",
-    "notInTauriEnvironment": "Cannot save product - please run in Tauri app",
-    "notInTauriEnvironmentDelete": "Cannot delete product - please run in Tauri app"
+    "loadProductsFailed": "Failed to load products"
   },
   "language": {
     "switch": "Switch Language",

@@ -3,7 +3,6 @@ import { Button, DatePicker, Form, FormProps, Input, InputNumber, Select, Row, C
 import zhCN from 'antd/locale/zh_CN';
 import enUS from 'antd/locale/en_US';
 import dayjs from "dayjs";
-import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from 'react-i18next';
 import type { FormData, Product, ProductInput } from "./types";
 import { CATEGORIES, CATEGORY_KEYS } from "./constants";
@@ -12,6 +11,7 @@ import type { ColumnConfig } from "./components/ColumnController";
 import { useTheme } from "./contexts/ThemeContext";
 import { useLanguage } from "./contexts/LanguageContext";
 import { useDocumentTitle } from "./hooks/useDocumentTitle";
+import storage from "./utils/storage";
 
 const AppContent: React.FC = () => {
   const { message } = AntdApp.useApp();
@@ -65,31 +65,25 @@ const AppContent: React.FC = () => {
   const loadProducts = useCallback(async () => {
     // Prevent duplicate calls in StrictMode
     if (hasLoadAttempted.current) return;
-    
+
     try {
       hasLoadAttempted.current = true;
-      
-      // Check if we're in Tauri environment
-      if (typeof window === 'undefined' || !(window as any).__TAURI__) {
-        console.warn("Not running in Tauri environment - using empty product list");
-        setProducts([]);
-        return;
-      }
-      
-      const result = await invoke<Product[]>("get_products");
+
+      const result = await storage.getProducts();
       setProducts(result);
+
+      // Log environment info for debugging
+      if (storage.isTauriEnvironment()) {
+        console.log("Running in Tauri environment - using database storage");
+      } else {
+        console.log("Running in browser environment - using localStorage");
+      }
     } catch (error) {
       console.error("Failed to load products:", error);
-      
-      // Only show error if we're actually in Tauri environment
-      if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-        message.error(t('messages.loadProductsFailed'));
-      } else {
-        console.warn("API call failed - not in Tauri environment");
-        setProducts([]);
-      }
+      message.error(t('messages.loadProductsFailed'));
+      setProducts([]);
     }
-  }, [message]);
+  }, [message, t]);
 
   // Load products from database on component mount
   useEffect(() => {
@@ -99,7 +93,7 @@ const AppContent: React.FC = () => {
   const onFinish: FormProps<FormData>["onFinish"] = async (values) => {
     console.log("表單提交成功:", values);
     setLoading(true);
-    
+
     try {
       // Prepare product data for saving
       const productInput: ProductInput = {
@@ -112,23 +106,17 @@ const AppContent: React.FC = () => {
         date: values.date ? dayjs(values.date).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
         remark: values.remark || "",
       };
-      
-      // Check if we're in Tauri environment
-      if (typeof window === 'undefined' || !(window as any).__TAURI__) {
-        message.warning(t('messages.notInTauriEnvironment'));
-        return;
-      }
-      
-      // Save to database via Tauri
-      const savedProduct = await invoke<Product>("save_product", { product: productInput });
-      
+
+      // Save product using unified storage (works in both browser and Tauri)
+      const savedProduct = await storage.saveProduct(productInput);
+
       // Update local state
       setProducts(prev => [savedProduct, ...prev]);
-      
+
       // Reset form
       form.resetFields();
       form.setFieldValue("date", dayjs());
-      
+
       message.success(t('messages.productSaved'));
     } catch (error) {
       console.error("Failed to save product:", error);
@@ -148,40 +136,20 @@ const AppContent: React.FC = () => {
 
   const handleDeleteProduct = useCallback(async (id: number) => {
     try {
-      // Check if we're in Tauri environment
-      if (typeof window === 'undefined' || !(window as any).__TAURI__) {
-        message.warning(t('messages.notInTauriEnvironmentDelete'));
-        return;
-      }
-
-      await invoke("delete_product", { id });
+      // Delete product using unified storage (works in both browser and Tauri)
+      await storage.deleteProduct(id);
       setProducts(prev => prev.filter(p => p.id !== id));
       message.success(t('messages.productDeleted'));
     } catch (error) {
       console.error("Failed to delete product:", error);
       message.error(t('messages.productDeleteFailed'));
     }
-  }, [message]);
+  }, [message, t]);
 
   const handleBulkImport = useCallback(async (products: ProductInput[]) => {
     try {
-      // Check if we're in Tauri environment
-      if (typeof window === 'undefined' || !(window as any).__TAURI__) {
-        message.warning(t('messages.notInTauriEnvironment'));
-        throw new Error('Not in Tauri environment');
-      }
-
-      // Import products one by one
-      const savedProducts: Product[] = [];
-      for (const productInput of products) {
-        try {
-          const savedProduct = await invoke<Product>("save_product", { product: productInput });
-          savedProducts.push(savedProduct);
-        } catch (error) {
-          console.error(`Failed to save product: ${productInput.title}`, error);
-          // Continue with other products but log the error
-        }
-      }
+      // Import products using unified storage (works in both browser and Tauri)
+      const savedProducts = await storage.importProducts(products);
 
       // Update local state with successfully saved products
       setProducts(prev => [...savedProducts, ...prev]);
@@ -191,7 +159,7 @@ const AppContent: React.FC = () => {
       console.error("Bulk import failed:", error);
       throw error;
     }
-  }, [message, t]);
+  }, []);
 
   useEffect(() => {
     form.validateFields([["source", "address"]]);

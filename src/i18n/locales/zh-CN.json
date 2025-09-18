@@ -56,9 +56,7 @@
     "productSaveFailed": "保存產品失敗",
     "productDeleted": "產品刪除成功！",
     "productDeleteFailed": "刪除產品失敗",
-    "loadProductsFailed": "加載產品失敗",
-    "notInTauriEnvironment": "無法保存產品 - 請在 Tauri 應用中運行",
-    "notInTauriEnvironmentDelete": "無法刪除產品 - 請在 Tauri 應用中運行"
+    "loadProductsFailed": "加載產品失敗"
   },
   "language": {
     "switch": "切換語言",
