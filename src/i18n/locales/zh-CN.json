@@ -29,6 +29,7 @@
     "productList": "產品列表",
     "items": "項",
     "exportCSV": "導出 CSV",
+    "importCSV": "導入 CSV",
     "id": "ID",
     "title": "產品標題",
     "brand": "品牌",
@@ -193,5 +194,39 @@
     "min": "滿",
     "reduce": "減",
     "everyMin": "每滿"
+  },
+  "csvImport": {
+    "title": "從 CSV 導入產品",
+    "instructions": "CSV 導入說明",
+    "description": "上傳包含以下列的 CSV 文件（按順序）：",
+    "columns": "ID, 產品標題, 品牌, 類型, 價格, 規格, 日期, 備註, 創建時間, 網址",
+    "requirements": "• 必需列：標題, 品牌, 類型, 價格\n• ID 和創建時間會自動生成（可以為空）\n• URL 是可選的（可以為空）\n• 日期格式：YYYY-MM-DD（可選，默認為今天）\n• 價格應為正數\n• 請使用下面的模板作為參考",
+    "selectFile": "選擇 CSV 文件",
+    "processing": "處理中...",
+    "downloadTemplate": "下載模板",
+    "templateFilename": "產品導入模板",
+    "cancel": "取消",
+    "import": "導入 {{count}} 個產品",
+    "readyToImport": "{{count}} 個產品準備導入",
+    "errorsFound": "發現 {{count}} 個錯誤",
+    "importSuccess": "成功導入 {{count}} 個產品",
+    "importFailed": "導入失敗：{{error}}",
+    "noValidProducts": "沒有有效的產品可導入",
+    "processingFailed": "處理 CSV 失敗：{{error}}",
+    "sampleProduct": "示例產品",
+    "sampleBrand": "示例品牌",
+    "sampleSpecification": "示例規格說明",
+    "sampleRemark": "示例備註",
+    "validationErrors": {
+      "insufficientColumns": "第 {{row}} 行：列數不足（至少需要 5 列：ID、標題、品牌、類型、價格）",
+      "fieldRequired": "第 {{row}} 行：{{field}} 是必需的",
+      "invalidType": "第 {{row}} 行：無效的類型 \"{{type}}\"。必須是以下之一：{{validTypes}}",
+      "invalidPrice": "第 {{row}} 行：無效的價格 \"{{price}}\"（必須是正數）",
+      "invalidURL": "第 {{row}} 行：無效的 URL 格式 \"{{url}}\"",
+      "invalidDate": "第 {{row}} 行：無效的日期格式 \"{{date}}\"（期望格式 YYYY-MM-DD）",
+      "parsingError": "第 {{row}} 行：解析錯誤 - {{error}}",
+      "lineParseError": "解析行失敗：{{error}}",
+      "emptyFile": "CSV 文件為空"
+    }
   }
 }

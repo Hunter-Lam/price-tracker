@@ -1,22 +1,34 @@
-import React, { useMemo } from "react";
-import { Table, TableColumnsType, Typography, Tag, Space, Button, Popconfirm, Row, Col, App } from "antd";
-import { LinkOutlined, DeleteOutlined, DownloadOutlined } from "@ant-design/icons";
+import React, { useMemo, useState } from "react";
+import { Table, TableColumnsType, Typography, Tag, Space, Button, Popconfirm, Row, Col, App, Modal, Upload, Alert, Divider } from "antd";
+import { LinkOutlined, DeleteOutlined, DownloadOutlined, UploadOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import type { UploadFile, UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { Product } from "../types";
+import { Product, ProductInput } from "../types";
 import { ColumnConfig } from "./ColumnController";
 import { exportToCSV, getVisibleColumnKeys } from "../utils/csvExport";
+import { parseCSV, importCSVFile, generateCSVTemplate, type CSVImportResult } from "../utils/csvImport";
 import dayjs from "dayjs";
+
+const { Text, Paragraph } = Typography;
 
 interface ProductTableProps {
   data?: Product[];
   onDelete?: (id: number) => void;
+  onImport?: (products: ProductInput[]) => Promise<void>;
   visibleColumns?: ColumnConfig[];
   columnController?: React.ReactNode;
 }
 
-const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibleColumns, columnController }) => {
+const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImport, visibleColumns, columnController }) => {
   const { message } = App.useApp();
   const { t } = useTranslation();
+
+  // Import modal state
+  const [isImportModalVisible, setIsImportModalVisible] = useState(false);
+  const [importResult, setImportResult] = useState<CSVImportResult | null>(null);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   // Generate filter options from data
   const filterOptions = useMemo(() => {
     const brands = Array.from(new Set(data.map(item => item.brand))).sort();
@@ -48,6 +60,78 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
       console.error('CSV export error:', error);
       message.error(t('messages.exportFailed'));
     }
+  };
+
+  // CSV import handlers
+  const handleImportCSV = () => {
+    if (!onImport) {
+      message.warning('Import functionality not available');
+      return;
+    }
+    setIsImportModalVisible(true);
+  };
+
+  const handleFileUpload: UploadProps['customRequest'] = async ({ file, onSuccess, onError }) => {
+    try {
+      setIsProcessing(true);
+      const csvContent = await importCSVFile(file as File);
+      const result = parseCSV(csvContent, { t });
+      setImportResult(result);
+
+      if (onSuccess) {
+        onSuccess('ok');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      message.error(t('csvImport.processingFailed', { error: errorMessage }));
+      if (onError) {
+        onError(new Error(errorMessage));
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFileChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
+    setFileList(newFileList);
+    if (newFileList.length === 0) {
+      setImportResult(null);
+    }
+  };
+
+  const handleImportConfirm = async () => {
+    if (!importResult || importResult.success.length === 0 || !onImport) {
+      message.warning(t('csvImport.noValidProducts'));
+      return;
+    }
+
+    try {
+      setIsImporting(true);
+      await onImport(importResult.success);
+      message.success(t('csvImport.importSuccess', { count: importResult.success.length }));
+      setIsImportModalVisible(false);
+      setFileList([]);
+      setImportResult(null);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      message.error(t('csvImport.importFailed', { error: errorMessage }));
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const template = generateCSVTemplate(t);
+    const blob = new Blob(['\uFEFF' + template], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${t('csvImport.templateFilename')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const columns: TableColumnsType<Product> = [
@@ -222,6 +306,15 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
         </Col>
         <Col>
           <Space>
+            {onImport && (
+              <Button
+                type="default"
+                icon={<UploadOutlined />}
+                onClick={handleImportCSV}
+              >
+                {t('table.importCSV')}
+              </Button>
+            )}
             <Button
               type="default"
               icon={<DownloadOutlined />}
@@ -249,6 +342,126 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, visibl
         size="middle"
         bordered={false}
       />
+
+      {/* CSV Import Modal */}
+      <Modal
+        title={t('csvImport.title')}
+        open={isImportModalVisible}
+        onCancel={() => {
+          setIsImportModalVisible(false);
+          setFileList([]);
+          setImportResult(null);
+        }}
+        width={800}
+        footer={[
+          <Button
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={downloadTemplate}
+          >
+            {t('csvImport.downloadTemplate')}
+          </Button>,
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsImportModalVisible(false);
+              setFileList([]);
+              setImportResult(null);
+            }}
+          >
+            {t('csvImport.cancel')}
+          </Button>,
+          <Button
+            key="import"
+            type="primary"
+            loading={isImporting}
+            disabled={!importResult || importResult.success.length === 0}
+            onClick={handleImportConfirm}
+          >
+            {t('csvImport.import', { count: importResult?.success.length || 0 })}
+          </Button>,
+        ]}
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Alert
+            message={t('csvImport.instructions')}
+            description={
+              <div>
+                <Paragraph style={{ margin: '8px 0' }}>
+                  {t('csvImport.description')}
+                </Paragraph>
+                <Text code>{t('csvImport.columns')}</Text>
+                <Paragraph style={{ margin: '8px 0 4px 0', whiteSpace: 'pre-line' }}>
+                  {t('csvImport.requirements')}
+                </Paragraph>
+              </div>
+            }
+            type="info"
+            icon={<InfoCircleOutlined />}
+            showIcon
+          />
+
+          <Upload
+            accept=".csv"
+            fileList={fileList}
+            customRequest={handleFileUpload}
+            onChange={handleFileChange}
+            maxCount={1}
+          >
+            <Button
+              icon={<UploadOutlined />}
+              loading={isProcessing}
+              disabled={isProcessing}
+            >
+              {isProcessing ? t('csvImport.processing') : t('csvImport.selectFile')}
+            </Button>
+          </Upload>
+
+          {importResult && (
+            <>
+              <Divider />
+
+              {importResult.success.length > 0 && (
+                <div>
+                  <Typography.Title level={5} style={{ color: '#52c41a', margin: '0 0 16px 0' }}>
+                    ✅ {t('csvImport.readyToImport', { count: importResult.success.length })}
+                  </Typography.Title>
+                  <Table
+                    columns={[
+                      { title: t('table.title'), dataIndex: 'title', key: 'title', ellipsis: true },
+                      { title: t('table.brand'), dataIndex: 'brand', key: 'brand', width: 120 },
+                      { title: t('table.type'), dataIndex: 'type', key: 'type', width: 100 },
+                      { title: t('table.price'), dataIndex: 'price', key: 'price', width: 100, render: (price: number) => `$${price.toFixed(2)}` },
+                    ]}
+                    dataSource={importResult.success.map((item, index) => ({ ...item, key: index }))}
+                    pagination={{ pageSize: 5, size: 'small' }}
+                    size="small"
+                    scroll={{ y: 200 }}
+                  />
+                </div>
+              )}
+
+              {importResult.errors.length > 0 && (
+                <div>
+                  <Typography.Title level={5} style={{ color: '#ff4d4f', margin: '16px 0 16px 0' }}>
+                    ❌ {t('csvImport.errorsFound', { count: importResult.errors.length })}
+                  </Typography.Title>
+                  <Table
+                    columns={[
+                      { title: 'Row', dataIndex: 'row', key: 'row', width: 80 },
+                      { title: 'Error', dataIndex: 'error', key: 'error', ellipsis: true },
+                    ]}
+                    dataSource={importResult.errors.map((error, index) => ({ ...error, key: index }))}
+                    pagination={{ pageSize: 5, size: 'small' }}
+                    size="small"
+                    scroll={{ y: 200 }}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </Space>
+      </Modal>
     </Space>
   );
 };

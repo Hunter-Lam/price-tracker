@@ -153,7 +153,7 @@ const AppContent: React.FC = () => {
         message.warning(t('messages.notInTauriEnvironmentDelete'));
         return;
       }
-      
+
       await invoke("delete_product", { id });
       setProducts(prev => prev.filter(p => p.id !== id));
       message.success(t('messages.productDeleted'));
@@ -162,6 +162,36 @@ const AppContent: React.FC = () => {
       message.error(t('messages.productDeleteFailed'));
     }
   }, [message]);
+
+  const handleBulkImport = useCallback(async (products: ProductInput[]) => {
+    try {
+      // Check if we're in Tauri environment
+      if (typeof window === 'undefined' || !(window as any).__TAURI__) {
+        message.warning(t('messages.notInTauriEnvironment'));
+        throw new Error('Not in Tauri environment');
+      }
+
+      // Import products one by one
+      const savedProducts: Product[] = [];
+      for (const productInput of products) {
+        try {
+          const savedProduct = await invoke<Product>("save_product", { product: productInput });
+          savedProducts.push(savedProduct);
+        } catch (error) {
+          console.error(`Failed to save product: ${productInput.title}`, error);
+          // Continue with other products but log the error
+        }
+      }
+
+      // Update local state with successfully saved products
+      setProducts(prev => [...savedProducts, ...prev]);
+
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Bulk import failed:", error);
+      throw error;
+    }
+  }, [message, t]);
 
   useEffect(() => {
     form.validateFields([["source", "address"]]);
@@ -351,9 +381,10 @@ const AppContent: React.FC = () => {
               <Card 
                 variant="outlined"
               >
-                <ProductTable 
-                  data={products} 
+                <ProductTable
+                  data={products}
                   onDelete={handleDeleteProduct}
+                  onImport={handleBulkImport}
                   visibleColumns={columnConfig}
                   columnController={
                     <ColumnController

@@ -29,6 +29,7 @@
     "productList": "Product List",
     "items": "items",
     "exportCSV": "Export CSV",
+    "importCSV": "Import CSV",
     "id": "ID",
     "title": "Product Title",
     "brand": "Brand",
@@ -193,5 +194,39 @@
     "min": "Min",
     "reduce": "off",
     "everyMin": "Every"
+  },
+  "csvImport": {
+    "title": "Import Products from CSV",
+    "instructions": "CSV Import Instructions",
+    "description": "Upload a CSV file with the following columns in order:",
+    "columns": "ID, Product Title, Brand, Type, Price, Specification, Date, Remark, Created At, URL",
+    "requirements": "• Required columns: Title, Brand, Type, Price\n• ID and Created At are auto-generated (can be empty)\n• URL is optional (can be empty)\n• Date format: YYYY-MM-DD (optional, defaults to today)\n• Price should be a positive number\n• Use the template below as a reference",
+    "selectFile": "Select CSV File",
+    "processing": "Processing...",
+    "downloadTemplate": "Download Template",
+    "templateFilename": "product_import_template",
+    "cancel": "Cancel",
+    "import": "Import {{count}} Products",
+    "readyToImport": "{{count}} Products Ready to Import",
+    "errorsFound": "{{count}} Errors Found",
+    "importSuccess": "Successfully imported {{count}} products",
+    "importFailed": "Import failed: {{error}}",
+    "noValidProducts": "No valid products to import",
+    "processingFailed": "Failed to process CSV: {{error}}",
+    "sampleProduct": "Sample Product",
+    "sampleBrand": "Sample Brand",
+    "sampleSpecification": "Sample specification",
+    "sampleRemark": "Sample remark",
+    "validationErrors": {
+      "insufficientColumns": "Row {{row}}: Insufficient columns (minimum 5 required: ID, Title, Brand, Type, Price)",
+      "fieldRequired": "Row {{row}}: {{field}} is required",
+      "invalidType": "Row {{row}}: Invalid type \"{{type}}\". Must be one of: {{validTypes}}",
+      "invalidPrice": "Row {{row}}: Invalid price \"{{price}\" (must be a positive number)",
+      "invalidURL": "Row {{row}}: Invalid URL format \"{{url}}\"",
+      "invalidDate": "Row {{row}}: Invalid date format \"{{date}\" (expected YYYY-MM-DD)",
+      "parsingError": "Row {{row}}: Parsing error - {{error}}",
+      "lineParseError": "Failed to parse line: {{error}}",
+      "emptyFile": "CSV file is empty"
+    }
   }
 }
