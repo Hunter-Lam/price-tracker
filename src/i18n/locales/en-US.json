@@ -23,7 +23,7 @@
     "remarkPlaceholder": "Enter remark",
     "submit": "Submit",
     "clear": "Clear",
-    "currency": "¥"
+    "currency": "元"
   },
   "table": {
     "productList": "Product List",
@@ -61,6 +61,8 @@
   },
   "language": {
     "switch": "Switch Language",
+    "quickSwitch": "Quick Switch Language",
+    "expandOptions": "Expand Language Options",
     "chinese": "中文",
     "english": "English"
   },
@@ -167,13 +169,13 @@
     },
     "discountMethods": {
       "discount": "Discount",
-      "amountDiscount": "Amount Discount",
+      "amountDiscount": "Spend & Save",
       "quantityDiscount": "Quantity Discount",
-      "everyReduction": "Every Reduction",
-      "thresholdReduction": "Threshold Reduction",
+      "everyReduction": "Tiered Discount",
+      "thresholdReduction": "Spend & Save",
       "firstPurchase": "First Purchase",
       "instantReduction": "Instant Reduction",
-      "redPacket": "Red Packet"
+      "redPacket": "Cash Bonus"
     }
   },
   "columnController": {
@@ -182,14 +184,14 @@
   },
   "discountInput": {
     "discount": "Discount",
-    "discountUnit": "off",
+    "discountUnit": "% off",
     "amount": "Amount",
     "quantity": "Quantity",
     "reduction": "Reduction",
     "currency": "¥",
     "quantityUnit": "pcs",
     "min": "Min",
-    "reduce": "Off",
+    "reduce": "off",
     "everyMin": "Every"
   }
 }

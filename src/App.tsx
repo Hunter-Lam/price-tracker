@@ -25,19 +25,42 @@ const AppContent: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const hasLoadAttempted = useRef(false);
   
-  // Column visibility configuration
-  const [columnConfig, setColumnConfig] = useState<ColumnConfig[]>([
-    { key: "id", title: "ID", visible: true },
-    { key: "title", title: t('table.title'), visible: true },
-    { key: "brand", title: t('table.brand'), visible: true },
-    { key: "type", title: t('table.type'), visible: true },
-    { key: "price", title: t('table.price'), visible: true },
-    { key: "specification", title: t('table.specification'), visible: true },
-    { key: "date", title: t('table.date'), visible: true },
-    { key: "remark", title: t('table.remark'), visible: true },
-    { key: "created_at", title: t('table.createdAt'), visible: true },
-    { key: "action", title: t('table.actions'), visible: true },
-  ]);
+  // Column visibility configuration - track only visibility, titles are dynamic
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
+    id: true,
+    title: true,
+    brand: true,
+    type: true,
+    price: true,
+    specification: true,
+    date: true,
+    remark: true,
+    created_at: true,
+    action: true,
+  });
+
+  // Generate column config with current translations
+  const columnConfig: ColumnConfig[] = [
+    { key: "id", title: t('table.id'), visible: columnVisibility.id },
+    { key: "title", title: t('table.title'), visible: columnVisibility.title },
+    { key: "brand", title: t('table.brand'), visible: columnVisibility.brand },
+    { key: "type", title: t('table.type'), visible: columnVisibility.type },
+    { key: "price", title: t('table.price'), visible: columnVisibility.price },
+    { key: "specification", title: t('table.specification'), visible: columnVisibility.specification },
+    { key: "date", title: t('table.date'), visible: columnVisibility.date },
+    { key: "remark", title: t('table.remark'), visible: columnVisibility.remark },
+    { key: "created_at", title: t('table.createdAt'), visible: columnVisibility.created_at },
+    { key: "action", title: t('table.actions'), visible: columnVisibility.action },
+  ];
+
+  // Handle column visibility changes
+  const handleColumnChange = (columns: ColumnConfig[]) => {
+    const newVisibility = columns.reduce((acc, col) => {
+      acc[col.key] = col.visible;
+      return acc;
+    }, {} as Record<string, boolean>);
+    setColumnVisibility(newVisibility);
+  };
 
   const loadProducts = useCallback(async () => {
     // Prevent duplicate calls in StrictMode
@@ -335,7 +358,7 @@ const AppContent: React.FC = () => {
                   columnController={
                     <ColumnController
                       columns={columnConfig}
-                      onColumnChange={setColumnConfig}
+                      onColumnChange={handleColumnChange}
                     />
                   }
                 />

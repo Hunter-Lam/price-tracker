@@ -61,6 +61,8 @@
   },
   "language": {
     "switch": "切換語言",
+    "quickSwitch": "快速切換語言",
+    "expandOptions": "展開語言選項",
     "chinese": "中文",
     "english": "English"
   },
