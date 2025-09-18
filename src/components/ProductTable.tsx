@@ -53,7 +53,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
       const visibleColumnKeys = getVisibleColumnKeys(visibleColumns);
       exportToCSV(data, {
         filename: t('table.productList'),
-        visibleColumns: visibleColumnKeys
+        visibleColumns: visibleColumnKeys,
+        t
       });
       message.success(t('messages.exportSuccess', { count: data.length }));
     } catch (error) {

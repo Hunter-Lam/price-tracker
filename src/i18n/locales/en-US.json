@@ -39,6 +39,7 @@
     "date": "Date",
     "remark": "Remark",
     "createdAt": "Created At",
+    "url": "URL",
     "actions": "Actions",
     "visitWebsite": "Visit Website",
     "deleteProduct": "Delete Product",

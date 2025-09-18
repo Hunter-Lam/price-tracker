@@ -4,10 +4,11 @@ import dayjs from 'dayjs';
 export interface CSVExportOptions {
   filename?: string;
   visibleColumns?: string[];
+  t?: (key: string) => string;
 }
 
 export const exportToCSV = (data: Product[], options: CSVExportOptions = {}) => {
-  const { filename = 'products', visibleColumns } = options;
+  const { filename = 'products', visibleColumns, t } = options;
   
   if (!data || data.length === 0) {
     throw new Error('No data to export');
@@ -15,16 +16,16 @@ export const exportToCSV = (data: Product[], options: CSVExportOptions = {}) => 
 
   // Define all possible columns with their headers
   const allColumns = [
-    { key: 'id', header: 'ID' },
-    { key: 'title', header: '產品標題' },
-    { key: 'brand', header: '品牌' },
-    { key: 'type', header: '類型' },
-    { key: 'price', header: '價格' },
-    { key: 'specification', header: '規格' },
-    { key: 'date', header: '日期' },
-    { key: 'remark', header: '備註' },
-    { key: 'created_at', header: '創建時間' },
-    { key: 'url', header: '網址' }
+    { key: 'id', header: t ? t('table.id') : 'ID' },
+    { key: 'title', header: t ? t('table.title') : '產品標題' },
+    { key: 'brand', header: t ? t('table.brand') : '品牌' },
+    { key: 'type', header: t ? t('table.type') : '類型' },
+    { key: 'price', header: t ? t('table.price') : '價格' },
+    { key: 'specification', header: t ? t('table.specification') : '規格' },
+    { key: 'date', header: t ? t('table.date') : '日期' },
+    { key: 'remark', header: t ? t('table.remark') : '備註' },
+    { key: 'created_at', header: t ? t('table.createdAt') : '創建時間' },
+    { key: 'url', header: t ? t('table.url') : '網址' }
   ];
 
   // Filter columns based on visibility (exclude action column)
