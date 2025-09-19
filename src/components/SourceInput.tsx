@@ -16,45 +16,28 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
   const { message } = App.useApp();
   const { t } = useTranslation();
 
-  const isUrl = (value: string) => /^https?:\/\/|www\.|\.com|\.cn/.test(value);
-
-  const autoCopyUrl = async (value: string) => {
-    if (!value?.trim() || !isUrl(value)) return;
-    
-    try {
-      const formattedUrl = formatUrl(value);
-      
-      // Only copy if we have a valid formatted URL
-      if (formattedUrl && formattedUrl.trim()) {
-        await navigator.clipboard.writeText(formattedUrl);
-        form.setFieldValue(["source", "address"], formattedUrl);
-        
-        if (formattedUrl !== value) {
-          message.success(t('source.urlAutoFormatted'));
-        } else {
-          message.success(t('source.urlCopied'));
-        }
-      }
-    } catch (error) {
-      console.log("Auto-copy failed:", error);
-    }
-  };
-
   const handleParseUrl = async () => {
     const value = form.getFieldValue(["source", "address"]);
     if (!value) return;
-    
+
     setLoading(true);
-    
+
     try {
       const formattedUrl = formatUrl(value);
       form.setFieldValue(["source", "address"], formattedUrl);
-      
+
+      await navigator.clipboard.writeText(formattedUrl);
+      if (formattedUrl !== value) {
+        message.success(t('source.urlAutoFormatted'));
+      } else {
+        message.success(t('source.urlCopied'));
+      }
+
       if (formattedUrl.includes("item.jd.com")) {
         message.loading(t('source.fetchingProductInfo'));
-        
+
         const productInfo = await fetchJDProductInfo(formattedUrl);
-        
+
         if (productInfo) {
           form.setFieldsValue({
             title: productInfo.title,
@@ -65,8 +48,6 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
         } else {
           message.warning(t('source.productInfoFailed'));
         }
-      } else {
-        message.info(t('source.urlCleaned'));
       }
     } catch (error) {
       message.error(t('source.parseError'));
@@ -92,10 +73,9 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
           />
         </Form.Item>
         <Form.Item noStyle name={["source", "address"]}>
-          <Input 
-            placeholder={t('source.placeholder')} 
+          <Input
+            placeholder={t('source.placeholder')}
             style={{ width: 'calc(100% - 180px)' }}
-            onBlur={(e) => autoCopyUrl(e.target.value)}
           />
         </Form.Item>
         <Button 
