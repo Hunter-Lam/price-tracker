@@ -329,3 +329,22 @@ https://item.jd.com/10021934281578.html
 -
 优惠券¥50
 满900减50
+
+
+更新價格和優惠
+醫用 藥用 藥材
+日用
+edit
+原價聯動終價
+copy URL if failing to open
+show download location
+select downlaod location
+[Error] Tauri saveProduct error: – "attempt to write a readonly database"
+	(anonymous function) (storage.ts:89)
+[Error] Storage saveProduct error: – Error: Failed to save product to database: Unknown error — storage.ts:113
+Error: Failed to save product to database: Unknown error — storage.ts:113
+	(anonymous function) (storage.ts:144)
+[Error] Failed to save product: – Error: Failed to save product to database: Unknown error — storage.ts:113
+Error: Failed to save product to database: Unknown error — storage.ts:113
+	(anonymous function) (App.tsx:111)
+數量 x mL,L,兩,斤,kg,g,piece
