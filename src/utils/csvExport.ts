@@ -28,9 +28,9 @@ export const exportToCSV = (data: Product[], options: CSVExportOptions = {}) => 
     { key: 'url', header: t ? t('table.url') : '網址' }
   ];
 
-  // Filter columns based on visibility (exclude action column)
-  const columnsToExport = visibleColumns 
-    ? allColumns.filter(col => visibleColumns.includes(col.key))
+  // Filter columns based on visibility (exclude action column, but always include url)
+  const columnsToExport = visibleColumns
+    ? allColumns.filter(col => visibleColumns.includes(col.key) || col.key === 'url')
     : allColumns.filter(col => col.key !== 'action');
 
   // Create CSV headers
@@ -54,6 +54,7 @@ export const exportToCSV = (data: Product[], options: CSVExportOptions = {}) => 
           break;
         case 'specification':
         case 'remark':
+        case 'url':
           value = value || '';
           break;
         default:
