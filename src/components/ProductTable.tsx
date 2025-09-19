@@ -7,6 +7,7 @@ import { Product, ProductInput } from "../types";
 import { ColumnConfig } from "./ColumnController";
 import { exportToCSV, getVisibleColumnKeys } from "../utils/csvExport";
 import { parseCSV, importCSVFile, generateCSVTemplate, type CSVImportResult } from "../utils/csvImport";
+import { openExternalUrl } from "../utils/openUrl";
 import dayjs from "dayjs";
 
 const { Text, Paragraph } = Typography;
@@ -256,7 +257,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
               type="text" 
               size="small"
               icon={<LinkOutlined />}
-              onClick={() => window.open(record.url, '_blank', 'noopener,noreferrer')}
+              onClick={() => openExternalUrl(record.url)}
               title={t('table.visitWebsite')}
             />
           )}
