@@ -348,3 +348,4 @@ Error: Failed to save product to database: Unknown error — storage.ts:113
 Error: Failed to save product to database: Unknown error — storage.ts:113
 	(anonymous function) (App.tsx:111)
 數量 x mL,L,兩,斤,kg,g,piece
+set a affordable guide lines
