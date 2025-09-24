@@ -24,6 +24,17 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
   const { message } = App.useApp();
   const { t } = useTranslation();
 
+  // Function to check if an address is a URL
+  const isUrl = (address: string): boolean => {
+    if (!address) return false;
+    const trimmed = address.trim();
+    return trimmed.startsWith('http://') ||
+           trimmed.startsWith('https://') ||
+           trimmed.includes('://') ||
+           /^www\./i.test(trimmed) ||
+           /\.(com|org|net|edu|gov|mil|int|co|cn|hk|tw|jp|kr|uk|de|fr|ca|au|br|in|ru|mx|it|es|nl|be|ch|se|no|dk|pl|cz|at|hu|gr|pt|ie|fi|bg|ro|hr|si|sk|lt|lv|ee|lu|mt|cy)($|\/)/i.test(trimmed);
+  };
+
   // Import modal state
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
   const [importResult, setImportResult] = useState<CSVImportResult | null>(null);
@@ -198,6 +209,37 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
       ),
     },
     {
+      title: t('table.url'),
+      dataIndex: "url",
+      key: "address",
+      width: 60,
+      align: 'center',
+      render: (url: string) => {
+        if (!url) return '-';
+
+        if (isUrl(url)) {
+          // Display as clickable link icon for URLs with tooltip
+          return (
+            <Button
+              type="text"
+              size="small"
+              icon={<LinkOutlined />}
+              onClick={() => openExternalUrl(url, (msg) => message.warning(msg))}
+              title={url}
+              style={{ padding: 4 }}
+            />
+          );
+        } else {
+          // Display as plain text for shop addresses
+          return (
+            <Typography.Text type="secondary" ellipsis title={url} style={{ fontSize: '12px' }}>
+              {url}
+            </Typography.Text>
+          );
+        }
+      },
+    },
+    {
       title: t('table.specification'),
       dataIndex: "specification",
       key: "specification",
@@ -252,15 +294,6 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
       fixed: 'right',
       render: (_, record) => (
         <Space>
-          {record.url && (
-            <Button
-              type="text"
-              size="small"
-              icon={<LinkOutlined />}
-              onClick={() => openExternalUrl(record.url, (msg) => message.warning(msg))}
-              title={t('table.visitWebsite')}
-            />
-          )}
           {onDelete && record.id && (
             <Popconfirm
               title={t('table.confirmDelete')}
