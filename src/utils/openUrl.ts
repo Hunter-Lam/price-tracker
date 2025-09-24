@@ -1,6 +1,32 @@
 import { storage } from './storage';
 
-export const openExternalUrl = async (url: string): Promise<void> => {
+// Function to copy URL to clipboard as fallback
+const copyUrlToClipboard = async (url: string): Promise<boolean> => {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(url);
+      return true;
+    } else {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const result = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return result;
+    }
+  } catch (error) {
+    console.error('Failed to copy URL to clipboard:', error);
+    return false;
+  }
+};
+
+export const openExternalUrl = async (url: string, showMessage?: (message: string) => void): Promise<void> => {
   if (!url) {
     console.warn('No URL provided to open');
     return;
@@ -26,15 +52,29 @@ export const openExternalUrl = async (url: string): Promise<void> => {
     }
   } catch (error) {
     console.error('Failed to open URL:', error);
-    // Fallback to window.open if Tauri opener fails
+
+    // Try fallback to window.open if Tauri opener fails
     try {
       console.log('Falling back to window.open for URL:', validUrl);
       window.open(validUrl, '_blank', 'noopener,noreferrer');
     } catch (fallbackError) {
       console.error('Fallback URL opening also failed:', fallbackError);
-      // If all else fails, show user-friendly error
-      if (typeof window !== 'undefined' && window.alert) {
-        window.alert(`Could not open URL: ${validUrl}\nPlease copy and paste this URL into your browser manually.`);
+
+      // If all else fails, copy URL to clipboard
+      console.log('Attempting to copy URL to clipboard as final fallback:', validUrl);
+      const copySuccess = await copyUrlToClipboard(validUrl);
+
+      if (copySuccess) {
+        if (showMessage) {
+          showMessage('Could not open URL, but it has been copied to clipboard');
+        } else if (typeof window !== 'undefined' && window.alert) {
+          window.alert(`Could not open URL, but it has been copied to clipboard: ${validUrl}`);
+        }
+      } else {
+        // Ultimate fallback - just show the URL
+        if (typeof window !== 'undefined' && window.alert) {
+          window.alert(`Could not open URL: ${validUrl}\nPlease copy and paste this URL into your browser manually.`);
+        }
       }
     }
   }

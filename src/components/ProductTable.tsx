@@ -253,11 +253,11 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
       render: (_, record) => (
         <Space>
           {record.url && (
-            <Button 
-              type="text" 
+            <Button
+              type="text"
               size="small"
               icon={<LinkOutlined />}
-              onClick={() => openExternalUrl(record.url)}
+              onClick={() => openExternalUrl(record.url, (msg) => message.warning(msg))}
               title={t('table.visitWebsite')}
             />
           )}
