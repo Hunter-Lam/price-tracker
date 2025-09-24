@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Button, DatePicker, Form, FormProps, Input, InputNumber, Select, Row, Col, Space } from "antd";
 import dayjs from "dayjs";
 import { useTranslation } from 'react-i18next';
@@ -24,10 +24,38 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   onSourceTypeChange,
 }) => {
   const { t } = useTranslation();
+  const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     form.validateFields([["source", "address"]]);
   }, [sourceTypeRule, form]);
+
+  const handleOriginalPriceChange = (value: number | null) => {
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Only auto-fill if original price has a value and final price is empty
+    if (value && value > 0) {
+      const currentFinalPrice = form.getFieldValue('price');
+      if (!currentFinalPrice) {
+        // Set a timeout to auto-fill the final price after 500ms
+        timeoutRef.current = setTimeout(() => {
+          form.setFieldValue('price', value);
+        }, 500);
+      }
+    }
+  };
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <Form
@@ -108,6 +136,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 placeholder="0.00"
                 min={0}
                 addonAfter={t('form.currency')}
+                onChange={handleOriginalPriceChange}
             />
           </Form.Item>
         </Col>
