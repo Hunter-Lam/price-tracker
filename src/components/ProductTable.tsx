@@ -196,6 +196,21 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
       ),
     },
     {
+      title: t('table.originalPrice'),
+      dataIndex: "originalPrice",
+      key: "originalPrice",
+      width: 100,
+      align: 'right',
+      sorter: (a, b) => (a.originalPrice || 0) - (b.originalPrice || 0),
+      render: (originalPrice: number) => (
+        originalPrice ? (
+          <Typography.Text style={{ color: '#8c8c8c', textDecoration: 'line-through' }}>
+            ¥{originalPrice.toFixed(2)}
+          </Typography.Text>
+        ) : '-'
+      ),
+    },
+    {
       title: t('table.price'),
       dataIndex: "price",
       key: "price",
@@ -207,6 +222,29 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
           ¥{typeof price === 'number' ? price.toFixed(2) : '0.00'}
         </Typography.Text>
       ),
+    },
+    {
+      title: t('table.discount'),
+      dataIndex: "discount",
+      key: "discount",
+      width: 120,
+      render: (discount: string) => {
+        if (!discount) return '-';
+        try {
+          const discountData = JSON.parse(discount);
+          return (
+            <Space direction="vertical" size="small" style={{ fontSize: '12px' }}>
+              {discountData.map((item: any, index: number) => (
+                <Tag key={index} color="orange" style={{ fontSize: '11px', margin: 0 }}>
+                  {item.discountOwner}: {item.discountType} {item.discountValue}
+                </Tag>
+              ))}
+            </Space>
+          );
+        } catch {
+          return <Typography.Text type="secondary">{discount}</Typography.Text>;
+        }
+      },
     },
     {
       title: t('table.url'),

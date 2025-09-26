@@ -8,6 +8,8 @@ export interface Product {
   brand: string;
   type: CategoryType;
   price: number;
+  originalPrice?: number;
+  discount?: string;
   specification?: string;
   date: string;
   remark?: string;
@@ -20,6 +22,8 @@ export interface ProductInput {
   brand: string;
   type: CategoryType;
   price: number;
+  originalPrice?: number;
+  discount?: string;
   specification?: string;
   date: string;
   remark?: string;
@@ -42,6 +46,7 @@ export interface FormData {
   brand: string;
   type: CategoryType;
   price: number;
+  originalPrice?: number;
   discount: DiscountItem[];
   specification: string;
   date: Dayjs;
