@@ -44,6 +44,7 @@
     "url": "網址",
     "actions": "操作",
     "visitWebsite": "訪問網站",
+    "editProduct": "編輯產品",
     "deleteProduct": "刪除產品",
     "confirmDelete": "確認刪除",
     "confirmDeleteDesc": "確定要刪除這個產品嗎？",
@@ -59,7 +60,8 @@
     "productSaveFailed": "保存產品失敗",
     "productDeleted": "產品刪除成功！",
     "productDeleteFailed": "刪除產品失敗",
-    "loadProductsFailed": "加載產品失敗"
+    "loadProductsFailed": "加載產品失敗",
+    "productLoadedForEdit": "產品信息已加載到表單，可以進行編輯"
   },
   "language": {
     "switch": "切換語言",

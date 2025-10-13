@@ -168,6 +168,49 @@ const AppContent: React.FC = () => {
     }
   }, []);
 
+  const handleEditProduct = useCallback((product: Product) => {
+    // Parse discount data
+    let discountData = [];
+    if (product.discount) {
+      try {
+        discountData = JSON.parse(product.discount);
+      } catch (error) {
+        console.error("Failed to parse discount:", error);
+      }
+    }
+
+    // Check if the address is a URL
+    const isUrl = (address: string): boolean => {
+      if (!address) return false;
+      const trimmed = address.trim();
+      return trimmed.startsWith('http://') ||
+             trimmed.startsWith('https://') ||
+             trimmed.includes('://') ||
+             /^www\./i.test(trimmed) ||
+             /\.(com|org|net|edu|gov|mil|int|co|cn|hk|tw|jp|kr|uk|de|fr|ca|au|br|in|ru|mx|it|es|nl|be|ch|se|no|dk|pl|cz|at|hu|gr|pt|ie|fi|bg|ro|hr|si|sk|lt|lv|ee|lu|mt|cy)($|\/)/i.test(trimmed);
+    };
+
+    // Set form values
+    form.setFieldsValue({
+      title: product.title,
+      brand: product.brand,
+      type: product.type,
+      price: product.price,
+      originalPrice: product.originalPrice || undefined,
+      discount: discountData.length > 0 ? discountData : undefined,
+      specification: product.specification || '',
+      date: product.date ? dayjs(product.date) : dayjs(),
+      remark: product.remark || '',
+      source: {
+        type: isUrl(product.url || '') ? 'URL' : '商鋪',
+        address: product.url || ''
+      }
+    });
+
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    message.info(t('messages.productLoadedForEdit'));
+  }, [form, message, t]);
 
   return (
     <div className="app-container" style={{ 
@@ -211,11 +254,12 @@ const AppContent: React.FC = () => {
                 />
               </Card>
 
-              <Card 
+              <Card
                 variant="outlined"
               >
                 <ProductTable
                   data={products}
+                  onEdit={handleEditProduct}
                   onDelete={handleDeleteProduct}
                   onImport={handleBulkImport}
                   visibleColumns={columnConfig}

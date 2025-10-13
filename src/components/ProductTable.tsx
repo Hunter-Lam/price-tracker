@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Table, TableColumnsType, Typography, Tag, Space, Button, Popconfirm, Row, Col, App, Modal, Upload, Alert, Divider } from "antd";
-import { LinkOutlined, DeleteOutlined, DownloadOutlined, UploadOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { LinkOutlined, DeleteOutlined, DownloadOutlined, UploadOutlined, InfoCircleOutlined, EditOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Product, ProductInput } from "../types";
@@ -15,12 +15,13 @@ const { Text, Paragraph } = Typography;
 interface ProductTableProps {
   data?: Product[];
   onDelete?: (id: number) => void;
+  onEdit?: (product: Product) => void;
   onImport?: (products: ProductInput[]) => Promise<void>;
   visibleColumns?: ColumnConfig[];
   columnController?: React.ReactNode;
 }
 
-const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImport, visibleColumns, columnController }) => {
+const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit, onImport, visibleColumns, columnController }) => {
   const { message } = App.useApp();
   const { t } = useTranslation();
 
@@ -332,6 +333,15 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
       fixed: 'right',
       render: (_, record) => (
         <Space>
+          {onEdit && (
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => onEdit(record)}
+              title={t('table.editProduct')}
+            />
+          )}
           {onDelete && record.id && (
             <Popconfirm
               title={t('table.confirmDelete')}
@@ -340,9 +350,9 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onImpo
               okText={t('table.confirm')}
               cancelText={t('table.cancel')}
             >
-              <Button 
-                type="text" 
-                danger 
+              <Button
+                type="text"
+                danger
                 size="small"
                 icon={<DeleteOutlined />}
                 title={t('table.deleteProduct')}

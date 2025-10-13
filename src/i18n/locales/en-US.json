@@ -44,6 +44,7 @@
     "url": "URL",
     "actions": "Actions",
     "visitWebsite": "Visit Website",
+    "editProduct": "Edit Product",
     "deleteProduct": "Delete Product",
     "confirmDelete": "Confirm Delete",
     "confirmDeleteDesc": "Are you sure you want to delete this product?",
@@ -59,7 +60,8 @@
     "productSaveFailed": "Failed to save product",
     "productDeleted": "Product deleted successfully!",
     "productDeleteFailed": "Failed to delete product",
-    "loadProductsFailed": "Failed to load products"
+    "loadProductsFailed": "Failed to load products",
+    "productLoadedForEdit": "Product information loaded into form for editing"
   },
   "language": {
     "switch": "Switch Language",
