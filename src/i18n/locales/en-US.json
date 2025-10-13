@@ -61,7 +61,8 @@
     "productDeleted": "Product deleted successfully!",
     "productDeleteFailed": "Failed to delete product",
     "loadProductsFailed": "Failed to load products",
-    "productLoadedForEdit": "Product information loaded into form for editing"
+    "productLoadedForEdit": "Product information loaded into form for editing",
+    "addressCopied": "Address copied to clipboard!"
   },
   "language": {
     "switch": "Switch Language",

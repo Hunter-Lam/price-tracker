@@ -61,7 +61,8 @@
     "productDeleted": "產品刪除成功！",
     "productDeleteFailed": "刪除產品失敗",
     "loadProductsFailed": "加載產品失敗",
-    "productLoadedForEdit": "產品信息已加載到表單，可以進行編輯"
+    "productLoadedForEdit": "產品信息已加載到表單，可以進行編輯",
+    "addressCopied": "地址已複製到剪貼板！"
   },
   "language": {
     "switch": "切換語言",

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Table, TableColumnsType, Typography, Tag, Space, Button, Popconfirm, Row, Col, App, Modal, Upload, Alert, Divider } from "antd";
-import { LinkOutlined, DeleteOutlined, DownloadOutlined, UploadOutlined, InfoCircleOutlined, EditOutlined } from "@ant-design/icons";
+import { LinkOutlined, DeleteOutlined, DownloadOutlined, UploadOutlined, InfoCircleOutlined, EditOutlined, EnvironmentOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Product, ProductInput } from "../types";
@@ -269,11 +269,19 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
             />
           );
         } else {
-          // Display as plain text for shop addresses
+          // Display as clickable address icon for shop addresses
           return (
-            <Typography.Text type="secondary" ellipsis title={url} style={{ fontSize: '12px' }}>
-              {url}
-            </Typography.Text>
+            <Button
+              type="text"
+              size="small"
+              icon={<EnvironmentOutlined />}
+              onClick={() => {
+                navigator.clipboard.writeText(url);
+                message.success(t('messages.addressCopied'));
+              }}
+              title={url}
+              style={{ padding: 4 }}
+            />
           );
         }
       },
