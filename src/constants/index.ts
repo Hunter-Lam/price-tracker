@@ -17,12 +17,14 @@ export const DISCOUNT_ORGANIZERS = ["政府", "平台", "店舖", "支付"] as c
 export const DISCOUNT_ORGANIZER_KEYS = ["government", "platform", "store", "payment"] as const;
 
 export const DISCOUNT_METHODS = [
-  "折扣", "滿金額折", "滿件折", "每滿減", 
-  "滿減", "首購", "立減", "紅包"
+  "折扣", "滿折", "滿件折",
+  "滿減", "每滿減", "立減",
+  "首購"
 ] as const;
 export const DISCOUNT_METHOD_KEYS = [
-  "discount", "amountDiscount", "quantityDiscount", "everyReduction",
-  "thresholdReduction", "firstPurchase", "instantReduction", "redPacket"
+  "discount", "amountDiscount", "quantityDiscount",
+  "thresholdReduction", "everyReduction", "instantReduction",
+  "firstPurchase"
 ] as const;
 
 export type SourceType = typeof SOURCES[number];

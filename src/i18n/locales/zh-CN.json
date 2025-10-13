@@ -170,13 +170,12 @@
     },
     "discountMethods": {
       "discount": "折扣",
-      "amountDiscount": "滿金額折",
+      "amountDiscount": "滿折",
       "quantityDiscount": "滿件折",
-      "everyReduction": "每滿減",
       "thresholdReduction": "滿減",
-      "firstPurchase": "首購",
+      "everyReduction": "每滿減",
       "instantReduction": "立減",
-      "redPacket": "紅包"
+      "firstPurchase": "首購"
     }
   },
   "columnController": {

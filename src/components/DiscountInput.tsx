@@ -28,22 +28,45 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
           </Space.Compact>
         );
       
-      case "滿金額折":
+      case "滿折":
+        // Parse value like "满800元9.5折" into two parts
+        let minAmountForDiscount = 0;
+        let discountRateForAmount = 0;
+        if (typeof value === 'string' && value.includes('满') && value.includes('元') && value.includes('折')) {
+          const match = value.match(/满(\d+)元([\d.]+)折/);
+          if (match) {
+            minAmountForDiscount = parseInt(match[1]);
+            discountRateForAmount = parseFloat(match[2]);
+          }
+        }
+
         return (
           <Space.Compact size="small">
-            <InputNumber 
+            <InputNumber
               min={0}
-              precision={0} 
-              placeholder={t('discountInput.amount')} 
+              precision={0}
+              placeholder={t('discountInput.amount')}
               addonBefore={t('discountInput.min')}
               addonAfter={t('discountInput.currency')}
+              value={minAmountForDiscount || undefined}
+              onChange={(val1) => {
+                const newMinAmount = val1 || 0;
+                const newValue = `满${newMinAmount}元${discountRateForAmount}折`;
+                onChange?.(newValue);
+              }}
             />
-            <InputNumber 
+            <InputNumber
               min={0}
-              max={10} 
-              precision={1} 
-              placeholder={t('discountInput.discount')} 
+              max={10}
+              precision={1}
+              placeholder={t('discountInput.discount')}
               addonAfter={t('discountInput.discountUnit')}
+              value={discountRateForAmount || undefined}
+              onChange={(val2) => {
+                const newDiscountRate = val2 || 0;
+                const newValue = `满${minAmountForDiscount}元${newDiscountRate}折`;
+                onChange?.(newValue);
+              }}
             />
           </Space.Compact>
         );
@@ -92,63 +115,49 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
         );
       
       case "每滿減":
-        // Parse value like "每满1件减40" or "每满68减20" into two parts
-        let everyQuantity = 0;
-        let everyReduction = 0;
-        let isAmountBased = false;
-        
-        if (typeof value === 'string' && value.includes('每满') && value.includes('减')) {
-          // Check for amount-based pattern first (每满68减20)
-          const amountMatch = value.match(/每满(\d+)减(\d+)/);
-          if (amountMatch && !value.includes('件')) {
-            everyQuantity = parseInt(amountMatch[1]);
-            everyReduction = parseInt(amountMatch[2]);
-            isAmountBased = true;
-          } else {
-            // Check for item-based pattern (每满1件减40)
-            const itemMatch = value.match(/每满(\d+)件减(\d+)/);
-            if (itemMatch) {
-              everyQuantity = parseInt(itemMatch[1]);
-              everyReduction = parseInt(itemMatch[2]);
-              isAmountBased = false;
-            }
+        // Parse value like "每满68减20" into two parts (amount-based only)
+        let everyAmount = 0;
+        let everyAmountReduction = 0;
+
+        if (typeof value === 'string' && value.includes('每满') && value.includes('减') && !value.includes('件')) {
+          const match = value.match(/每满(\d+)减(\d+)/);
+          if (match) {
+            everyAmount = parseInt(match[1]);
+            everyAmountReduction = parseInt(match[2]);
           }
         }
-        
+
         return (
           <Space.Compact size="small">
-            <InputNumber 
+            <InputNumber
               min={0}
-              precision={0} 
-              placeholder={isAmountBased ? t('discountInput.amount') : t('discountInput.quantity')} 
+              precision={0}
+              placeholder={t('discountInput.amount')}
               addonBefore={t('discountInput.everyMin')}
-              addonAfter={isAmountBased ? t('discountInput.currency') : t('discountInput.quantityUnit')}
-              value={everyQuantity || undefined}
+              addonAfter={t('discountInput.currency')}
+              value={everyAmount || undefined}
               onChange={(val1) => {
-                const newEveryQuantity = val1 || 0;
-                const newValue = isAmountBased 
-                  ? `每满${newEveryQuantity}减${everyReduction}`
-                  : `每满${newEveryQuantity}件减${everyReduction}`;
+                const newEveryAmount = val1 || 0;
+                const newValue = `每满${newEveryAmount}减${everyAmountReduction}`;
                 onChange?.(newValue);
               }}
             />
-            <InputNumber 
+            <InputNumber
               min={0}
-              precision={0} 
-              placeholder={t('discountInput.reduction')} 
+              precision={0}
+              placeholder={t('discountInput.reduction')}
               addonBefore={t('discountInput.reduce')}
               addonAfter={t('discountInput.currency')}
-              value={everyReduction || undefined}
+              value={everyAmountReduction || undefined}
               onChange={(val2) => {
                 const newEveryReduction = val2 || 0;
-                const newValue = isAmountBased 
-                  ? `每满${everyQuantity}减${newEveryReduction}`
-                  : `每满${everyQuantity}件减${newEveryReduction}`;
+                const newValue = `每满${everyAmount}减${newEveryReduction}`;
                 onChange?.(newValue);
               }}
             />
           </Space.Compact>
         );
+
       
       case "滿減":
         // Parse value like "满800减65" into two parts
@@ -197,24 +206,10 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
       case "立減":
         return (
           <Space.Compact size="small">
-            <InputNumber 
+            <InputNumber
               min={0}
-              precision={2} 
-              placeholder={t('discountInput.amount')} 
-              addonAfter={t('discountInput.currency')}
-              value={typeof value === 'number' ? value : undefined}
-              onChange={(val) => onChange?.(val || 0)}
-            />
-          </Space.Compact>
-        );
-      
-      case "紅包":
-        return (
-          <Space.Compact size="small">
-            <InputNumber 
-              min={0}
-              precision={2} 
-              placeholder={t('discountInput.amount')} 
+              precision={2}
+              placeholder={t('discountInput.amount')}
               addonAfter={t('discountInput.currency')}
               value={typeof value === 'number' ? value : undefined}
               onChange={(val) => onChange?.(val || 0)}

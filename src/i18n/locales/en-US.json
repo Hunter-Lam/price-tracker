@@ -171,13 +171,12 @@
     },
     "discountMethods": {
       "discount": "Discount",
-      "amountDiscount": "Spend & Save",
+      "amountDiscount": "Tiered Discount Rate",
       "quantityDiscount": "Quantity Discount",
-      "everyReduction": "Tiered Discount",
       "thresholdReduction": "Spend & Save",
-      "firstPurchase": "First Purchase",
+      "everyReduction": "Tiered Reduction",
       "instantReduction": "Instant Reduction",
-      "redPacket": "Cash Bonus"
+      "firstPurchase": "First Purchase"
     }
   },
   "columnController": {
