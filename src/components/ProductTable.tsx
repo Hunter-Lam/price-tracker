@@ -249,22 +249,22 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
     },
     {
       title: t('table.url'),
-      dataIndex: "url",
+      dataIndex: "address",
       key: "address",
       width: 60,
       align: 'center',
-      render: (url: string) => {
-        if (!url) return '-';
+      render: (address: string) => {
+        if (!address) return '-';
 
-        if (isUrl(url)) {
+        if (isUrl(address)) {
           // Display as clickable link icon for URLs with tooltip
           return (
             <Button
               type="text"
               size="small"
               icon={<LinkOutlined />}
-              onClick={() => openExternalUrl(url, (msg) => message.warning(msg))}
-              title={url}
+              onClick={() => openExternalUrl(address, (msg) => message.warning(msg))}
+              title={address}
               style={{ padding: 4 }}
             />
           );
@@ -276,10 +276,10 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
               size="small"
               icon={<EnvironmentOutlined />}
               onClick={() => {
-                navigator.clipboard.writeText(url);
+                navigator.clipboard.writeText(address);
                 message.success(t('messages.addressCopied'));
               }}
-              title={url}
+              title={address}
               style={{ padding: 4 }}
             />
           );
@@ -421,12 +421,12 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       <Table<Product>
         columns={filteredColumns}
         dataSource={data}
-        rowKey={(record) => record.id?.toString() || record.url}
+        rowKey={(record) => record.id?.toString() || record.address}
         pagination={{
           showSizeChanger: true,
           showQuickJumper: true,
           responsive: true,
-          showTotal: (total, range) => 
+          showTotal: (total, range) =>
             t('table.paginationTotal', { start: range[0], end: range[1], total }),
         }}
         scroll={{ x: 1200 }}
