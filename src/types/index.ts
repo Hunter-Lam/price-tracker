@@ -3,7 +3,7 @@ import type { SourceType, CategoryType, DiscountOrganizerType, DiscountMethodTyp
 
 export interface Product {
   id?: number;
-  url: string;
+  address: string;
   title: string;
   brand: string;
   type: CategoryType;
@@ -17,7 +17,7 @@ export interface Product {
 }
 
 export interface ProductInput {
-  url: string;
+  address: string;
   title: string;
   brand: string;
   type: CategoryType;
