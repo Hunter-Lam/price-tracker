@@ -102,7 +102,7 @@ const AppContent: React.FC = () => {
     try {
       // Prepare product data for saving
       const productInput: ProductInput = {
-        url: values.source?.address || "",
+        address: values.source?.address || "",
         title: values.title || "",
         brand: values.brand || "",
         type: values.type || "",
@@ -202,8 +202,8 @@ const AppContent: React.FC = () => {
       date: product.date ? dayjs(product.date) : dayjs(),
       remark: product.remark || '',
       source: {
-        type: isUrl(product.url || '') ? 'URL' : '商鋪',
-        address: product.url || ''
+        type: isUrl(product.address || '') ? 'URL' : '商鋪',
+        address: product.address || ''
       }
     });
 
