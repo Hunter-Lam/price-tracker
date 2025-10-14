@@ -25,12 +25,12 @@ export const exportToCSV = (data: Product[], options: CSVExportOptions = {}) => 
     { key: 'date', header: t ? t('table.date') : '日期' },
     { key: 'remark', header: t ? t('table.remark') : '備註' },
     { key: 'created_at', header: t ? t('table.createdAt') : '創建時間' },
-    { key: 'url', header: t ? t('table.url') : '網址' }
+    { key: 'address', header: t ? t('table.url') : '地址' }
   ];
 
-  // Filter columns based on visibility (exclude action column, but always include url)
+  // Filter columns based on visibility (exclude action column, but always include address)
   const columnsToExport = visibleColumns
-    ? allColumns.filter(col => visibleColumns.includes(col.key) || col.key === 'url')
+    ? allColumns.filter(col => visibleColumns.includes(col.key) || col.key === 'address')
     : allColumns.filter(col => col.key !== 'action');
 
   // Create CSV headers
@@ -54,7 +54,7 @@ export const exportToCSV = (data: Product[], options: CSVExportOptions = {}) => 
           break;
         case 'specification':
         case 'remark':
-        case 'url':
+        case 'address':
           value = value || '';
           break;
         default:
