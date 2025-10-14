@@ -7,7 +7,7 @@ use std::env;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Product {
     pub id: Option<i64>,
-    pub url: String,
+    pub address: String,
     pub title: String,
     pub brand: String,
     pub r#type: String,
@@ -23,7 +23,7 @@ pub struct Product {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProductInput {
-    pub url: String,
+    pub address: String,
     pub title: String,
     pub brand: String,
     pub r#type: String,
@@ -57,7 +57,7 @@ impl DatabaseState {
         conn.execute(
             "CREATE TABLE IF NOT EXISTS products (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                url TEXT NOT NULL,
+                address TEXT NOT NULL,
                 title TEXT NOT NULL,
                 brand TEXT NOT NULL,
                 type TEXT NOT NULL,
@@ -75,6 +75,9 @@ impl DatabaseState {
         // Add new columns to existing table if they don't exist
         let _ = conn.execute("ALTER TABLE products ADD COLUMN original_price REAL", []);
         let _ = conn.execute("ALTER TABLE products ADD COLUMN discount TEXT", []);
+
+        // Rename url column to address if it exists
+        let _ = conn.execute("ALTER TABLE products RENAME COLUMN url TO address", []);
 
         Ok(DatabaseState {
             conn: Mutex::new(conn),
@@ -96,14 +99,14 @@ async fn save_product(
     
     let mut stmt = conn
         .prepare(
-            "INSERT INTO products (url, title, brand, type, price, original_price, discount, specification, date, remark)
+            "INSERT INTO products (address, title, brand, type, price, original_price, discount, specification, date, remark)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)"
         )
         .map_err(|e| e.to_string())?;
 
     let id = stmt
         .insert((
-            &product.url,
+            &product.address,
             &product.title,
             &product.brand,
             &product.r#type,
@@ -118,14 +121,14 @@ async fn save_product(
 
     // Get the created product
     let mut stmt = conn
-        .prepare("SELECT id, url, title, brand, type, price, original_price, discount, specification, date, remark, created_at FROM products WHERE id = ?1")
+        .prepare("SELECT id, address, title, brand, type, price, original_price, discount, specification, date, remark, created_at FROM products WHERE id = ?1")
         .map_err(|e| e.to_string())?;
 
     let product_row = stmt
         .query_row([id], |row| {
             Ok(Product {
                 id: Some(row.get(0)?),
-                url: row.get(1)?,
+                address: row.get(1)?,
                 title: row.get(2)?,
                 brand: row.get(3)?,
                 r#type: row.get(4)?,
@@ -149,14 +152,14 @@ async fn get_products(state: State<'_, DatabaseState>) -> Result<Vec<Product>, S
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
     
     let mut stmt = conn
-        .prepare("SELECT id, url, title, brand, type, price, original_price, discount, specification, date, remark, created_at FROM products ORDER BY created_at DESC")
+        .prepare("SELECT id, address, title, brand, type, price, original_price, discount, specification, date, remark, created_at FROM products ORDER BY created_at DESC")
         .map_err(|e| e.to_string())?;
 
     let product_iter = stmt
         .query_map([], |row| {
             Ok(Product {
                 id: Some(row.get(0)?),
-                url: row.get(1)?,
+                address: row.get(1)?,
                 title: row.get(2)?,
                 brand: row.get(3)?,
                 r#type: row.get(4)?,
