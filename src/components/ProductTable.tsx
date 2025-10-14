@@ -291,11 +291,18 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       dataIndex: "specification",
       key: "specification",
       width: 150,
-      ellipsis: true,
       render: (specification: string) => (
-        <Typography.Text type="secondary">
+        <Paragraph
+          type="secondary"
+          style={{
+            margin: 0,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+          }}
+          ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}
+        >
           {specification || '-'}
-        </Typography.Text>
+        </Paragraph>
       ),
     },
     {
@@ -315,11 +322,18 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       dataIndex: "remark",
       key: "remark",
       width: 150,
-      ellipsis: true,
       render: (remark: string) => (
-        <Typography.Text type="secondary">
+        <Paragraph
+          type="secondary"
+          style={{
+            margin: 0,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+          }}
+          ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}
+        >
           {remark || '-'}
-        </Typography.Text>
+        </Paragraph>
       ),
     },
     {
