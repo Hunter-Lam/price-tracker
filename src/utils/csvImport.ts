@@ -29,7 +29,7 @@ export const getImportColumns = (t?: (key: string) => string) => [
   { key: 'date', header: t ? t('table.date') : '日期', required: false },
   { key: 'remark', header: t ? t('table.remark') : '備註', required: false },
   { key: 'created_at', header: t ? t('table.createdAt') : '創建時間', required: false },
-  { key: 'url', header: t ? t('table.url') : '網址', required: false }
+  { key: 'address', header: t ? t('table.url') : '地址', required: false }
 ] as const;
 
 // Keep the static version for backward compatibility
@@ -122,14 +122,14 @@ const validateAndParseProduct = (row: string[], rowIndex: number, columnMap: Arr
       return { error: errorMsg };
     }
 
-    // Clean URL (make validation lenient)
-    if (values.url) {
-      let cleanUrl = values.url.trim();
+    // Clean address (make validation lenient)
+    if (values.address) {
+      let cleanAddress = values.address.trim();
       // Only auto-add https if it looks like a domain (contains dots)
-      if (cleanUrl && !cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://') && cleanUrl.includes('.')) {
-        cleanUrl = 'https://' + cleanUrl;
+      if (cleanAddress && !cleanAddress.startsWith('http://') && !cleanAddress.startsWith('https://') && cleanAddress.includes('.')) {
+        cleanAddress = 'https://' + cleanAddress;
       }
-      values.url = cleanUrl;
+      values.address = cleanAddress;
     }
 
     // Parse and validate date
@@ -146,7 +146,7 @@ const validateAndParseProduct = (row: string[], rowIndex: number, columnMap: Arr
     }
 
     const product: ProductInput = {
-      url: values.url || '',
+      address: values.address || '',
       title: values.title,
       brand: values.brand,
       type: type as any, // type is validated above
