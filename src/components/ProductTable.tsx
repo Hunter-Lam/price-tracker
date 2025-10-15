@@ -218,11 +218,26 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       width: 85,
       align: 'right',
       sorter: (a, b) => a.price - b.price,
-      render: (price: number) => (
-        <Typography.Text strong style={{ color: '#f5222d' }}>
-          ¥{typeof price === 'number' ? price.toFixed(2) : '0.00'}
-        </Typography.Text>
-      ),
+      render: (price: number, record: Product) => {
+        const hasOriginalPrice = record.originalPrice && record.originalPrice > 0;
+        const hasDifference = hasOriginalPrice && record.originalPrice! > price;
+        const pricePercentage = hasDifference
+          ? (Math.ceil(price / record.originalPrice! * 1000) / 10).toFixed(1)
+          : null;
+
+        return (
+          <div>
+            <Typography.Text strong style={{ color: '#f5222d' }}>
+              ¥{typeof price === 'number' ? price.toFixed(2) : '0.00'}
+            </Typography.Text>
+            {pricePercentage && (
+              <div style={{ fontSize: '11px', color: '#52c41a' }}>
+                {pricePercentage}%
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: t('table.discount'),
