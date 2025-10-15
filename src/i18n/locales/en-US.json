@@ -4,6 +4,7 @@
   },
   "form": {
     "addProduct": "Add Product",
+    "editProduct": "Edit Product",
     "productTitle": "Name",
     "productTitlePlaceholder": "Enter product name",
     "productTitleRequired": "Please enter product name",
@@ -22,7 +23,10 @@
     "remark": "Remark",
     "remarkPlaceholder": "Enter remark",
     "submit": "Submit",
+    "update": "Update",
+    "insertAsNew": "Insert as New",
     "clear": "Clear",
+    "cancel": "Cancel",
     "currency": "CNY"
   },
   "table": {
@@ -58,6 +62,8 @@
     "exportFailed": "Export failed, please try again",
     "productSaved": "Product saved successfully!",
     "productSaveFailed": "Failed to save product",
+    "productUpdated": "Product updated successfully!",
+    "productUpdateFailed": "Failed to update product",
     "productDeleted": "Product deleted successfully!",
     "productDeleteFailed": "Failed to delete product",
     "loadProductsFailed": "Failed to load products",

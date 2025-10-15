@@ -4,6 +4,7 @@
   },
   "form": {
     "addProduct": "新增產品",
+    "editProduct": "編輯產品",
     "productTitle": "名稱",
     "productTitlePlaceholder": "請輸入產品名稱",
     "productTitleRequired": "請輸入產品名稱",
@@ -22,7 +23,10 @@
     "remark": "備註",
     "remarkPlaceholder": "請輸入備註",
     "submit": "提交",
+    "update": "更新",
+    "insertAsNew": "另存為新記錄",
     "clear": "清空",
+    "cancel": "取消",
     "currency": "元"
   },
   "table": {
@@ -58,6 +62,8 @@
     "exportFailed": "導出失敗，請重試",
     "productSaved": "產品保存成功！",
     "productSaveFailed": "保存產品失敗",
+    "productUpdated": "產品更新成功！",
+    "productUpdateFailed": "更新產品失敗",
     "productDeleted": "產品刪除成功！",
     "productDeleteFailed": "刪除產品失敗",
     "loadProductsFailed": "加載產品失敗",

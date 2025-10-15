@@ -22,6 +22,7 @@ const AppContent: React.FC = () => {
   const [sourceTypeRule, setSourceTypeRule] = useState<Array<{ type: string }>>([{ type: "url" }]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const hasLoadAttempted = useRef(false);
   
   // Column visibility configuration - track only visibility, titles are dynamic
@@ -112,20 +113,31 @@ const AppContent: React.FC = () => {
         remark: values.remark || "",
       };
 
-      // Save product using unified storage (works in both browser and Tauri)
-      const savedProduct = await storage.saveProduct(productInput);
+      if (editingProductId !== null) {
+        // Update existing product
+        const updatedProduct = await storage.updateProduct(editingProductId, productInput);
 
-      // Update local state
-      setProducts(prev => [savedProduct, ...prev]);
+        // Update local state
+        setProducts(prev => prev.map(p => p.id === editingProductId ? updatedProduct : p));
 
-      // Reset form
+        message.success(t('messages.productUpdated'));
+      } else {
+        // Save new product using unified storage (works in both browser and Tauri)
+        const savedProduct = await storage.saveProduct(productInput);
+
+        // Update local state
+        setProducts(prev => [savedProduct, ...prev]);
+
+        message.success(t('messages.productSaved'));
+      }
+
+      // Reset form and editing state
       form.resetFields();
       form.setFieldValue("date", dayjs());
-
-      message.success(t('messages.productSaved'));
+      setEditingProductId(null);
     } catch (error) {
       console.error("Failed to save product:", error);
-      message.error(t('messages.productSaveFailed'));
+      message.error(editingProductId !== null ? t('messages.productUpdateFailed') : t('messages.productSaveFailed'));
     } finally {
       setLoading(false);
     }
@@ -138,6 +150,56 @@ const AppContent: React.FC = () => {
   const handleSourceTypeChange = useCallback((rule: Array<{ type: string }>) => {
     setSourceTypeRule(rule);
   }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingProductId(null);
+    form.resetFields();
+    form.setFieldValue("date", dayjs());
+  }, [form]);
+
+  const handleInsertAsNew = useCallback(async () => {
+    // Validate the form first
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+
+      // Prepare product data for saving as new
+      const productInput: ProductInput = {
+        address: values.source?.address || "",
+        title: values.title || "",
+        brand: values.brand || "",
+        type: values.type || "",
+        price: values.price || 0,
+        originalPrice: values.originalPrice || undefined,
+        discount: values.discount ? JSON.stringify(values.discount) : undefined,
+        specification: values.specification || "",
+        date: values.date ? dayjs(values.date).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
+        remark: values.remark || "",
+      };
+
+      // Save as new product (ignore editingProductId)
+      const savedProduct = await storage.saveProduct(productInput);
+
+      // Update local state
+      setProducts(prev => [savedProduct, ...prev]);
+
+      // Reset form and editing state
+      form.resetFields();
+      form.setFieldValue("date", dayjs());
+      setEditingProductId(null);
+
+      message.success(t('messages.productSaved'));
+    } catch (error: any) {
+      // If validation failed, don't show error message
+      if (error?.errorFields) {
+        return;
+      }
+      console.error("Failed to insert as new:", error);
+      message.error(t('messages.productSaveFailed'));
+    } finally {
+      setLoading(false);
+    }
+  }, [form, t, message]);
 
   const handleDeleteProduct = useCallback(async (id: number) => {
     try {
@@ -187,6 +249,9 @@ const AppContent: React.FC = () => {
              /^www\./i.test(trimmed) ||
              /\.(com|org|net|edu|gov|mil|int|co|cn|hk|tw|jp|kr|uk|de|fr|ca|au|br|in|ru|mx|it|es|nl|be|ch|se|no|dk|pl|cz|at|hu|gr|pt|ie|fi|bg|ro|hr|si|sk|lt|lv|ee|lu|mt|cy)($|\/)/i.test(trimmed);
     };
+
+    // Set editing state
+    setEditingProductId(product.id || null);
 
     // Set form values
     form.setFieldsValue({
@@ -238,8 +303,8 @@ const AppContent: React.FC = () => {
             </Row>
             
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              <Card 
-                title={t('form.addProduct')} 
+              <Card
+                title={editingProductId !== null ? t('form.editProduct') : t('form.addProduct')}
                 variant="outlined"
               >
                 <ProductForm
@@ -249,6 +314,9 @@ const AppContent: React.FC = () => {
                   onFinish={onFinish}
                   onFinishFailed={onFinishFailed}
                   onSourceTypeChange={handleSourceTypeChange}
+                  isEditing={editingProductId !== null}
+                  onCancelEdit={handleCancelEdit}
+                  onInsertAsNew={handleInsertAsNew}
                 />
               </Card>
 

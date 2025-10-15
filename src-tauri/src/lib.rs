@@ -183,9 +183,64 @@ async fn get_products(state: State<'_, DatabaseState>) -> Result<Vec<Product>, S
 }
 
 #[tauri::command]
+async fn update_product(
+    id: i64,
+    product: ProductInput,
+    state: State<'_, DatabaseState>,
+) -> Result<Product, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+
+    conn.execute(
+        "UPDATE products SET address = ?1, title = ?2, brand = ?3, type = ?4, price = ?5,
+         original_price = ?6, discount = ?7, specification = ?8, date = ?9, remark = ?10
+         WHERE id = ?11",
+        (
+            &product.address,
+            &product.title,
+            &product.brand,
+            &product.r#type,
+            product.price,
+            product.original_price,
+            &product.discount,
+            &product.specification,
+            &product.date,
+            &product.remark,
+            id,
+        ),
+    )
+    .map_err(|e| e.to_string())?;
+
+    // Get the updated product
+    let mut stmt = conn
+        .prepare("SELECT id, address, title, brand, type, price, original_price, discount, specification, date, remark, created_at FROM products WHERE id = ?1")
+        .map_err(|e| e.to_string())?;
+
+    let product_row = stmt
+        .query_row([id], |row| {
+            Ok(Product {
+                id: Some(row.get(0)?),
+                address: row.get(1)?,
+                title: row.get(2)?,
+                brand: row.get(3)?,
+                r#type: row.get(4)?,
+                price: row.get(5)?,
+                original_price: row.get(6)?,
+                discount: row.get(7)?,
+                specification: row.get(8)?,
+                date: row.get(9)?,
+                remark: row.get(10)?,
+                created_at: row.get(11)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+
+    Ok(product_row)
+}
+
+#[tauri::command]
 async fn delete_product(id: i64, state: State<'_, DatabaseState>) -> Result<(), String> {
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     conn.execute("DELETE FROM products WHERE id = ?1", [id])
         .map_err(|e| e.to_string())?;
 
@@ -214,6 +269,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             save_product,
+            update_product,
             get_products,
             delete_product,
             get_database_path

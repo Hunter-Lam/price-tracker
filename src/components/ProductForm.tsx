@@ -13,6 +13,9 @@ interface ProductFormProps {
   onFinish: FormProps<FormData>["onFinish"];
   onFinishFailed: FormProps<FormData>["onFinishFailed"];
   onSourceTypeChange: (rule: Array<{ type: string }>) => void;
+  isEditing?: boolean;
+  onCancelEdit?: () => void;
+  onInsertAsNew?: () => void;
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({
@@ -22,6 +25,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   onFinish,
   onFinishFailed,
   onSourceTypeChange,
+  isEditing = false,
+  onCancelEdit,
+  onInsertAsNew,
 }) => {
   const { t } = useTranslation();
   const timeoutRef = useRef<number | null>(null);
@@ -186,23 +192,51 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       <Form.Item>
         <Space size="middle" wrap>
-          <Button
-            type="primary"
-            htmlType="submit"
-            size="large"
-            loading={loading}
-          >
-            {t('form.submit')}
-          </Button>
-          <Button
-            onClick={() => {
-              form.resetFields();
-              form.setFieldValue("date", dayjs());
-            }}
-            size="large"
-          >
-            {t('form.clear')}
-          </Button>
+          {isEditing ? (
+            <>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                loading={loading}
+              >
+                {t('form.update')}
+              </Button>
+              <Button
+                onClick={onInsertAsNew}
+                size="large"
+                loading={loading}
+              >
+                {t('form.insertAsNew')}
+              </Button>
+              <Button
+                onClick={onCancelEdit}
+                size="large"
+              >
+                {t('form.cancel')}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                loading={loading}
+              >
+                {t('form.submit')}
+              </Button>
+              <Button
+                onClick={() => {
+                  form.resetFields();
+                  form.setFieldValue("date", dayjs());
+                }}
+                size="large"
+              >
+                {t('form.clear')}
+              </Button>
+            </>
+          )}
         </Space>
       </Form.Item>
     </Form>

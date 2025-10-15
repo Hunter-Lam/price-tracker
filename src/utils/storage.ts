@@ -59,6 +59,31 @@ const browserStorage = {
     }
   },
 
+  async updateProduct(id: number, product: ProductInput): Promise<Product> {
+    try {
+      const products = await this.getProducts();
+      const index = products.findIndex(p => p.id === id);
+
+      if (index === -1) {
+        throw new Error('Product not found');
+      }
+
+      const updatedProduct: Product = {
+        ...product,
+        id,
+        created_at: products[index].created_at
+      };
+
+      products[index] = updatedProduct;
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+
+      return updatedProduct;
+    } catch (error) {
+      console.error('Failed to update product in localStorage:', error);
+      throw new Error('Failed to update product');
+    }
+  },
+
   async deleteProduct(id: number): Promise<void> {
     try {
       const products = await this.getProducts();
@@ -111,6 +136,17 @@ const tauriStorage = {
     } catch (error) {
       console.error("Tauri saveProduct error:", error);
       throw new Error(`Failed to save product to database: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  },
+
+  async updateProduct(id: number, product: ProductInput): Promise<Product> {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const result = await invoke<Product>("update_product", { id, product });
+      return result;
+    } catch (error) {
+      console.error("Tauri updateProduct error:", error);
+      throw new Error(`Failed to update product in database: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   },
 
@@ -172,6 +208,21 @@ export const storage = {
       }
     } catch (error) {
       console.error("Storage saveProduct error:", error);
+      throw error;
+    }
+  },
+
+  async updateProduct(id: number, product: ProductInput): Promise<Product> {
+    try {
+      if (isTauriEnvironment()) {
+        console.log("✏️ Updating in database:", product.title);
+        return await tauriStorage.updateProduct(id, product);
+      } else {
+        console.log("✏️ Updating in localStorage:", product.title);
+        return await browserStorage.updateProduct(id, product);
+      }
+    } catch (error) {
+      console.error("Storage updateProduct error:", error);
       throw error;
     }
   },
