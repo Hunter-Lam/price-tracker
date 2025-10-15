@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { Card, Typography, Space, Empty, AutoComplete, Button, Row, Col } from 'antd';
 import { ClearOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,11 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
     product: '',
     brand: '',
     type: ''
+  });
+  const [visibleBaselines, setVisibleBaselines] = useState({
+    average: false,
+    min: false,
+    max: false
   });
 
   // Handle filter changes
@@ -187,6 +192,14 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
   // Generate colors for different product lines
   const colors = ['#1890ff', '#52c41a', '#fa8c16', '#eb2f96', '#722ed1', '#13c2c2', '#faad14', '#f5222d'];
 
+  // Toggle baseline visibility
+  const toggleBaseline = (type: 'average' | 'min' | 'max') => {
+    setVisibleBaselines(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }));
+  };
+
   // Custom tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -287,13 +300,37 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
             <Typography.Text style={{ color: '#722ed1' }}>
               {t('priceHistory.dataPoints')}: {statistics.count}
             </Typography.Text>
-            <Typography.Text style={{ color: '#1890ff' }}>
+            <Typography.Text
+              style={{
+                color: '#1890ff',
+                cursor: 'pointer',
+                textDecoration: visibleBaselines.average ? 'underline' : 'none',
+                fontWeight: visibleBaselines.average ? 'bold' : 'normal'
+              }}
+              onClick={() => toggleBaseline('average')}
+            >
               {t('priceHistory.averagePrice')}: ¥{statistics.average.toFixed(2)}
             </Typography.Text>
-            <Typography.Text style={{ color: '#52c41a' }}>
+            <Typography.Text
+              style={{
+                color: '#52c41a',
+                cursor: 'pointer',
+                textDecoration: visibleBaselines.min ? 'underline' : 'none',
+                fontWeight: visibleBaselines.min ? 'bold' : 'normal'
+              }}
+              onClick={() => toggleBaseline('min')}
+            >
               {t('priceHistory.minPrice')}: ¥{statistics.min.toFixed(2)}
             </Typography.Text>
-            <Typography.Text style={{ color: '#f5222d' }}>
+            <Typography.Text
+              style={{
+                color: '#f5222d',
+                cursor: 'pointer',
+                textDecoration: visibleBaselines.max ? 'underline' : 'none',
+                fontWeight: visibleBaselines.max ? 'bold' : 'normal'
+              }}
+              onClick={() => toggleBaseline('max')}
+            >
               {t('priceHistory.maxPrice')}: ¥{statistics.max.toFixed(2)}
             </Typography.Text>
           </Space>
@@ -326,21 +363,66 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ data }) => {
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-                {productLines.map((productLine, index) => (
-                  <Line 
-                    key={productLine}
-                    type="monotone" 
-                    dataKey={productLine} 
-                    stroke={colors[index % colors.length]} 
+                {visibleBaselines.average && (
+                  <ReferenceLine
+                    y={statistics.average}
+                    stroke="#1890ff"
+                    strokeDasharray="5 5"
                     strokeWidth={2}
-                    dot={{ 
-                      fill: colors[index % colors.length], 
-                      strokeWidth: 2, 
+                    label={{
+                      value: `Avg: ¥${statistics.average.toFixed(2)}`,
+                      position: 'insideTopRight',
+                      fill: '#1890ff',
+                      fontSize: 12,
+                      fontWeight: 'bold'
+                    }}
+                  />
+                )}
+                {visibleBaselines.min && (
+                  <ReferenceLine
+                    y={statistics.min}
+                    stroke="#52c41a"
+                    strokeDasharray="5 5"
+                    strokeWidth={2}
+                    label={{
+                      value: `Min: ¥${statistics.min.toFixed(2)}`,
+                      position: 'insideTopRight',
+                      fill: '#52c41a',
+                      fontSize: 12,
+                      fontWeight: 'bold'
+                    }}
+                  />
+                )}
+                {visibleBaselines.max && (
+                  <ReferenceLine
+                    y={statistics.max}
+                    stroke="#f5222d"
+                    strokeDasharray="5 5"
+                    strokeWidth={2}
+                    label={{
+                      value: `Max: ¥${statistics.max.toFixed(2)}`,
+                      position: 'insideTopRight',
+                      fill: '#f5222d',
+                      fontSize: 12,
+                      fontWeight: 'bold'
+                    }}
+                  />
+                )}
+                {productLines.map((productLine, index) => (
+                  <Line
+                    key={productLine}
+                    type="monotone"
+                    dataKey={productLine}
+                    stroke={colors[index % colors.length]}
+                    strokeWidth={2}
+                    dot={{
+                      fill: colors[index % colors.length],
+                      strokeWidth: 2,
                       r: 3
                     }}
-                    activeDot={{ 
-                      r: 5, 
-                      stroke: colors[index % colors.length], 
+                    activeDot={{
+                      r: 5,
+                      stroke: colors[index % colors.length],
                       strokeWidth: 2
                     }}
                     name={productLine}
