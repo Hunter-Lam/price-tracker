@@ -234,16 +234,16 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
         try {
           const discountData = JSON.parse(discount);
           return (
-            <Space direction="vertical" size="small" style={{ fontSize: '12px' }}>
+            <div style={{ fontSize: '12px' }}>
               {discountData.map((item: any, index: number) => (
-                <Tag key={index} color="orange" style={{ fontSize: '11px', margin: 0 }}>
+                <div key={index} style={{ marginBottom: index < discountData.length - 1 ? '4px' : 0 }}>
                   {item.discountOwner}: {item.discountType} {item.discountValue}
-                </Tag>
+                </div>
               ))}
-            </Space>
+            </div>
           );
         } catch {
-          return <Typography.Text type="secondary">{discount}</Typography.Text>;
+          return <Typography.Text>{discount}</Typography.Text>;
         }
       },
     },
@@ -293,7 +293,6 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       width: 140,
       render: (specification: string) => (
         <Paragraph
-          type="secondary"
           style={{
             margin: 0,
             whiteSpace: 'pre-wrap',
