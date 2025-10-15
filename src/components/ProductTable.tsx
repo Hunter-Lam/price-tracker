@@ -248,45 +248,6 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       },
     },
     {
-      title: t('table.url'),
-      dataIndex: "address",
-      key: "address",
-      width: 50,
-      align: 'center',
-      render: (address: string) => {
-        if (!address) return '-';
-
-        if (isUrl(address)) {
-          // Display as clickable link icon for URLs with tooltip
-          return (
-            <Button
-              type="text"
-              size="small"
-              icon={<LinkOutlined />}
-              onClick={() => openExternalUrl(address, (msg) => message.warning(msg))}
-              title={address}
-              style={{ padding: 4 }}
-            />
-          );
-        } else {
-          // Display as clickable address icon for shop addresses
-          return (
-            <Button
-              type="text"
-              size="small"
-              icon={<EnvironmentOutlined />}
-              onClick={() => {
-                navigator.clipboard.writeText(address);
-                message.success(t('messages.addressCopied'));
-              }}
-              title={address}
-              style={{ padding: 4 }}
-            />
-          );
-        }
-      },
-    },
-    {
       title: t('table.specification'),
       dataIndex: "specification",
       key: "specification",
@@ -354,6 +315,28 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       fixed: 'right',
       render: (_, record) => (
         <Space>
+          {record.address && (
+            isUrl(record.address) ? (
+              <Button
+                type="text"
+                size="small"
+                icon={<LinkOutlined />}
+                onClick={() => openExternalUrl(record.address, (msg) => message.warning(msg))}
+                title={record.address}
+              />
+            ) : (
+              <Button
+                type="text"
+                size="small"
+                icon={<EnvironmentOutlined />}
+                onClick={() => {
+                  navigator.clipboard.writeText(record.address);
+                  message.success(t('messages.addressCopied'));
+                }}
+                title={record.address}
+              />
+            )
+          )}
           {onEdit && (
             <Button
               type="text"
@@ -442,7 +425,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
           showTotal: (total, range) =>
             t('table.paginationTotal', { start: range[0], end: range[1], total }),
         }}
-        scroll={{ x: 1435 }}
+        scroll={{ x: 1385 }}
         size="middle"
         bordered={false}
       />
