@@ -114,7 +114,7 @@ const DISCOUNT_PATTERNS: DiscountPattern[] = [
   },
   {
     pattern: /淘金币已抵([\d.]+)元/,
-    type: "紅包",
+    type: "立減",
     owner: "平台",
     getValue: (match) => parseFloat(match[1]),
     priority: 8
@@ -444,7 +444,7 @@ class CalculationEngine {
     
     // Categorize discounts
     result.discounts.forEach((discount) => {
-      if (discount.discountType === "立減" || discount.discountType === "首購" || discount.discountType === "紅包") {
+      if (discount.discountType === "立減" || discount.discountType === "首購") {
         if (typeof discount.discountValue === 'number') {
           fixedDiscounts.push(discount.discountValue);
         }
@@ -536,7 +536,7 @@ class CalculationEngine {
     
     // Apply other fixed discounts (multiply by 2 for per-item discounts)
     result.discounts.forEach((otherDiscount) => {
-      if (otherDiscount.discountType === "立減" || otherDiscount.discountType === "首購" || otherDiscount.discountType === "紅包") {
+      if (otherDiscount.discountType === "立減" || otherDiscount.discountType === "首購") {
         if (typeof otherDiscount.discountValue === 'number') {
           quantity2Price -= otherDiscount.discountValue * 2;
         }
@@ -632,7 +632,7 @@ const isCalculationAccurate = (result: ParsedDiscount): boolean => {
   
   // Categorize discounts (same logic as in CalculationEngine)
   result.discounts.forEach((discount) => {
-    if (discount.discountType === "立減" || discount.discountType === "首購" || discount.discountType === "紅包") {
+    if (discount.discountType === "立減" || discount.discountType === "首購") {
       if (typeof discount.discountValue === 'number') {
         fixedDiscounts.push(discount.discountValue);
       }
