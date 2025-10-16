@@ -240,16 +240,17 @@
   "pasteParser": {
     "title": "貼上產品資訊",
     "pasteButton": "貼上",
-    "placeholder": "請在此貼上產品資訊...\n\n根據您的需求，將支援多種格式。",
+    "placeholder": "請在此貼上產品資訊...\n\n支援的格式：\n- 京東商品資訊 JSON",
     "parseButton": "解析",
     "clear": "清空",
     "cancel": "取消",
     "inputRequired": "請貼上產品資訊進行解析",
-    "parseSuccess": "成功解析並填入產品資訊",
+    "parseSuccess": "成功解析產品資訊！請檢視下方內容，點擊「應用到表單」以填入表單。",
     "parseError": "解析錯誤",
     "parseWarning": "解析警告",
     "noValidInfo": "無法從輸入中解析有效的產品資訊",
     "instructions": "使用說明",
-    "instructionsDetail": "請貼上支援格式的產品資訊，點擊「解析」自動填入表單欄位。"
+    "instructionsDetail": "請貼上支援格式的產品資訊，點擊「解析」自動填入表單欄位。",
+    "applyToForm": "應用到表單"
   }
 }

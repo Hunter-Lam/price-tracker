@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, Input, Button, Space, Alert } from 'antd';
+import { Modal, Input, Button, Space, Alert, Descriptions } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { parseProductInfo } from '../utils/productInfoParser';
 
 const { TextArea } = Input;
 
@@ -19,6 +20,7 @@ export const PasteParseModal: React.FC<PasteParseModalProps> = ({
   const [inputText, setInputText] = useState('');
   const [parseError, setParseError] = useState<string | null>(null);
   const [parseWarning, setParseWarning] = useState<string | null>(null);
+  const [parseResult, setParseResult] = useState<any>(null);
 
   const handleParse = () => {
     if (!inputText.trim()) {
@@ -27,19 +29,35 @@ export const PasteParseModal: React.FC<PasteParseModalProps> = ({
     }
 
     try {
-      // TODO: Implement parser logic for different formats
-      // For now, this is a placeholder
-      const parsedData = parseProductInfo(inputText);
+      const result = parseProductInfo(inputText);
 
-      if (parsedData) {
-        onParse(parsedData);
-        handleClose();
+      if (result.success && result.data) {
+        setParseResult(result.data);
+        setParseError(null);
+
+        // Set warnings if any
+        if (result.warnings && result.warnings.length > 0) {
+          setParseWarning(result.warnings.join(', '));
+        } else {
+          setParseWarning(null);
+        }
       } else {
-        setParseError(t('pasteParser.noValidInfo'));
+        setParseError(result.error || t('pasteParser.noValidInfo'));
+        setParseResult(null);
+        setParseWarning(null);
       }
     } catch (error) {
       console.error('Parse error:', error);
       setParseError(t('pasteParser.parseError'));
+      setParseResult(null);
+      setParseWarning(null);
+    }
+  };
+
+  const handleApplyToForm = () => {
+    if (parseResult) {
+      onParse(parseResult);
+      handleClose();
     }
   };
 
@@ -47,14 +65,8 @@ export const PasteParseModal: React.FC<PasteParseModalProps> = ({
     setInputText('');
     setParseError(null);
     setParseWarning(null);
+    setParseResult(null);
     onCancel();
-  };
-
-  const parseProductInfo = (_text: string): any | null => {
-    // Placeholder parser - will be implemented based on your formats
-    // This is where we'll add logic to parse different product info formats
-
-    return null; // Will be replaced with actual parsing logic
   };
 
   return (
@@ -62,21 +74,28 @@ export const PasteParseModal: React.FC<PasteParseModalProps> = ({
       title={t('pasteParser.title')}
       open={open}
       onCancel={handleClose}
-      width={700}
+      width={800}
       footer={[
         <Button key="clear" onClick={() => {
           setInputText('');
           setParseError(null);
           setParseWarning(null);
+          setParseResult(null);
         }}>
           {t('pasteParser.clear')}
         </Button>,
         <Button key="cancel" onClick={handleClose}>
           {t('pasteParser.cancel')}
         </Button>,
-        <Button key="parse" type="primary" onClick={handleParse}>
-          {t('pasteParser.parseButton')}
-        </Button>,
+        parseResult ? (
+          <Button key="apply" type="primary" onClick={handleApplyToForm}>
+            {t('pasteParser.applyToForm')}
+          </Button>
+        ) : (
+          <Button key="parse" type="primary" onClick={handleParse}>
+            {t('pasteParser.parseButton')}
+          </Button>
+        ),
       ]}
     >
       <Space direction="vertical" style={{ width: '100%' }} size="middle">
@@ -102,20 +121,63 @@ export const PasteParseModal: React.FC<PasteParseModalProps> = ({
           />
         )}
 
-        <TextArea
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder={t('pasteParser.placeholder')}
-          rows={12}
-          style={{ fontFamily: 'monospace' }}
-        />
+        {parseResult ? (
+          <Alert
+            message={t('pasteParser.parseSuccess')}
+            type="success"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        ) : null}
 
-        <Alert
-          message={t('pasteParser.instructions')}
-          description={t('pasteParser.instructionsDetail')}
-          type="info"
-          showIcon
-        />
+        {parseResult ? (
+          <Descriptions bordered column={1} size="small">
+            <Descriptions.Item label={t('form.productTitle')}>
+              {parseResult.title || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label={t('form.brand')}>
+              {parseResult.brand || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label={t('form.finalPrice')}>
+              {parseResult.price ? `¥${parseResult.price}` : '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label={t('form.originalPrice')}>
+              {parseResult.originalPrice ? `¥${parseResult.originalPrice}` : '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label={t('form.specification')}>
+              {parseResult.specification || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label={t('source.productSource')}>
+              {parseResult.source?.address || '-'}
+            </Descriptions.Item>
+            {parseResult.discount && parseResult.discount.length > 0 && (
+              <Descriptions.Item label={t('discount.title')}>
+                {parseResult.discount.map((d: any, idx: number) => (
+                  <div key={idx}>
+                    {d.discountOwner} - {d.discountType}: {d.discountValue}
+                  </div>
+                ))}
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+        ) : (
+          <>
+            <TextArea
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder={t('pasteParser.placeholder')}
+              rows={12}
+              style={{ fontFamily: 'monospace' }}
+            />
+
+            <Alert
+              message={t('pasteParser.instructions')}
+              description={t('pasteParser.instructionsDetail')}
+              type="info"
+              showIcon
+            />
+          </>
+        )}
       </Space>
     </Modal>
   );
