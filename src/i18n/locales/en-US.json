@@ -237,5 +237,20 @@
       "lineParseError": "Failed to parse line: {{error}}",
       "emptyFile": "CSV file is empty"
     }
+  },
+  "pasteParser": {
+    "title": "Paste Product Information",
+    "pasteButton": "Paste",
+    "placeholder": "Paste product information here...\n\nSupported formats will be added based on your requirements.",
+    "parseButton": "Parse",
+    "clear": "Clear",
+    "cancel": "Cancel",
+    "inputRequired": "Please paste product information to parse",
+    "parseSuccess": "Successfully parsed and filled product information",
+    "parseError": "Parse Error",
+    "parseWarning": "Parse Warning",
+    "noValidInfo": "Could not parse valid product information from the input",
+    "instructions": "How to use",
+    "instructionsDetail": "Paste product information in the supported format. Click 'Parse' to automatically fill the form fields."
   }
 }

@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { Form, FormProps, Row, Col, Card, Space, Typography, ConfigProvider, theme, App as AntdApp } from "antd";
+import { Form, FormProps, Row, Col, Card, Space, Typography, ConfigProvider, theme, App as AntdApp, Button } from "antd";
+import { FileTextOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import enUS from 'antd/locale/en_US';
 import dayjs from "dayjs";
 import { useTranslation } from 'react-i18next';
 import type { FormData, Product, ProductInput } from "./types";
-import { ProductForm, ProductTable, ColumnController, ThemeToggle, LanguageToggle, PriceHistoryChart } from "./components";
+import { ProductForm, ProductTable, ColumnController, ThemeToggle, LanguageToggle, PriceHistoryChart, PasteParseModal } from "./components";
 import type { ColumnConfig } from "./components/ColumnController";
 import { useTheme } from "./contexts/ThemeContext";
 import { useLanguage } from "./contexts/LanguageContext";
@@ -23,6 +24,7 @@ const AppContent: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [pasteModalOpen, setPasteModalOpen] = useState(false);
   const hasLoadAttempted = useRef(false);
   
   // Column visibility configuration - track only visibility, titles are dynamic
@@ -275,6 +277,17 @@ const AppContent: React.FC = () => {
     message.info(t('messages.productLoadedForEdit'));
   }, [form, message, t]);
 
+  const handleParsedData = useCallback((parsedData: any) => {
+    // Fill the form with parsed data
+    if (parsedData) {
+      form.setFieldsValue(parsedData);
+      message.success(t('pasteParser.parseSuccess'));
+
+      // Scroll to form
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [form, message, t]);
+
   return (
     <div className="app-container" style={{ 
       minHeight: '100vh', 
@@ -304,7 +317,18 @@ const AppContent: React.FC = () => {
             
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <Card
-                title={editingProductId !== null ? t('form.editProduct') : t('form.addProduct')}
+                title={
+                  <Space>
+                    <span>{editingProductId !== null ? t('form.editProduct') : t('form.addProduct')}</span>
+                    <Button
+                      icon={<FileTextOutlined />}
+                      onClick={() => setPasteModalOpen(true)}
+                      size="small"
+                    >
+                      {t('pasteParser.pasteButton')}
+                    </Button>
+                  </Space>
+                }
                 variant="outlined"
               >
                 <ProductForm
@@ -343,6 +367,12 @@ const AppContent: React.FC = () => {
             </Col>
           </Row>
         </div>
+
+        <PasteParseModal
+          open={pasteModalOpen}
+          onCancel={() => setPasteModalOpen(false)}
+          onParse={handleParsedData}
+        />
       </div>
   );
 };

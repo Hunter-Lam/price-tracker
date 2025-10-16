@@ -8,3 +8,4 @@ export { default as ThemeToggle } from "./ThemeToggle";
 export { default as LanguageToggle } from "./LanguageToggle";
 export { default as PriceHistoryChart } from "./PriceHistoryChart";
 export { ProductForm } from "./ProductForm";
+export { PasteParseModal } from "./PasteParseModal";
