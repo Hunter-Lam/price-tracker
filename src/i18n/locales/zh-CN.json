@@ -240,7 +240,7 @@
   "pasteParser": {
     "title": "貼上產品資訊",
     "pasteButton": "貼上",
-    "placeholder": "請在此貼上產品資訊...\n\n支援的格式：\n- 京東商品資訊 JSON",
+    "placeholder": "請在此貼上產品資訊...\n\n支援的格式：\n- 京東商品資訊 JSON\n- 電商網站純文字（標題、價格、優惠）",
     "parseButton": "解析",
     "clear": "清空",
     "cancel": "取消",

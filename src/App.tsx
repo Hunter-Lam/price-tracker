@@ -280,7 +280,18 @@ const AppContent: React.FC = () => {
   const handleParsedData = useCallback((parsedData: any) => {
     // Fill the form with parsed data
     if (parsedData) {
-      form.setFieldsValue(parsedData);
+      console.log('Parsed data:', parsedData);
+
+      // Ensure discount is properly set (undefined or array, never null)
+      const formValues = {
+        ...parsedData,
+        discount: parsedData.discount && parsedData.discount.length > 0
+          ? parsedData.discount
+          : undefined
+      };
+
+      console.log('Form values to set:', formValues);
+      form.setFieldsValue(formValues);
       message.success(t('pasteParser.parseSuccess'));
 
       // Scroll to form

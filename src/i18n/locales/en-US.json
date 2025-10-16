@@ -241,7 +241,7 @@
   "pasteParser": {
     "title": "Paste Product Information",
     "pasteButton": "Paste",
-    "placeholder": "Paste product information here...\n\nSupported formats:\n- JD.com product info JSON",
+    "placeholder": "Paste product information here...\n\nSupported formats:\n- JD.com product info JSON\n- Plain text from e-commerce sites (title, prices, discounts)",
     "parseButton": "Parse",
     "clear": "Clear",
     "cancel": "Cancel",
