@@ -1,0 +1,872 @@
+{
+    "userInfo": {},
+    "laXinInfo": [
+        {
+            "laXinIconUrl": "https://img10.360buyimg.com/imagetools/jfs/t1/261718/22/6550/560/67769350Fdeefaae3/4bdb3c60cbde63ae.png",
+            "laXinJumpUrl": "https://pro.jd.com/mall/active/MHAX3QZutUs8DSadoAaRCRJ2713/index.html?babelChannel=ttt60",
+            "laXinText": "企业超市集采低至5折",
+            "laXinType": "4"
+        }
+    ],
+    "whiteBarInfo": {
+        "creditStatus": 1,
+        "isAva": true,
+        "isBtUser": true,
+        "isDiscountAll": false,
+        "isFull": true,
+        "isItemAva": true,
+        "isLogin": true,
+        "isShopAva": true,
+        "isSkuAva": true,
+        "key": "78FCDDB682C1A03CA7EE0E591F73F2F3",
+        "marketingText": "",
+        "noAvaInfo": "",
+        "planInfos": [
+            {
+                "curTotal": 10.8,
+                "fee": 0.0,
+                "feeText": "0服务费",
+                "firstPay": 10.8,
+                "firstRepayDate": "2025-11-16",
+                "isDiscount": false,
+                "isMaxDiscount": false,
+                "laterPay": 10.8,
+                "mainTitle": "不分期",
+                "plan": 1,
+                "planFee": 0.0,
+                "rate": 0.0,
+                "secondTitle": "无服务费",
+                "total": 10.8
+            },
+            {
+                "curTotal": 3.69,
+                "fee": 0.27,
+                "feeText": "含服务费",
+                "firstPay": 3.69,
+                "firstRepayDate": "2025-11-16",
+                "isDiscount": false,
+                "isMaxDiscount": false,
+                "laterPay": 3.69,
+                "mainTitle": "￥3.69 x 3期",
+                "plan": 3,
+                "planFee": 0.09,
+                "rate": 0.8,
+                "secondTitle": "含服务费：费率0.80%，￥0.09&times;3期",
+                "total": 11.07
+            },
+            {
+                "curTotal": 1.89,
+                "fee": 0.54,
+                "feeText": "含服务费",
+                "firstPay": 1.89,
+                "firstRepayDate": "2025-11-16",
+                "isDiscount": false,
+                "isMaxDiscount": false,
+                "laterPay": 1.89,
+                "mainTitle": "￥1.89 x 6期",
+                "plan": 6,
+                "planFee": 0.09,
+                "rate": 0.8,
+                "secondTitle": "含服务费：费率0.80%，￥0.09&times;6期",
+                "total": 11.34
+            },
+            {
+                "curTotal": 0.99,
+                "fee": 1.08,
+                "feeText": "含服务费",
+                "firstPay": 0.99,
+                "firstRepayDate": "2025-11-16",
+                "isDiscount": false,
+                "isMaxDiscount": false,
+                "laterPay": 0.99,
+                "mainTitle": "￥0.99 x 12期",
+                "plan": 12,
+                "planFee": 0.09,
+                "rate": 0.8,
+                "secondTitle": "含服务费：费率0.80%，￥0.09&times;12期",
+                "total": 11.88
+            },
+            {
+                "curTotal": 0.54,
+                "fee": 2.16,
+                "feeText": "含服务费",
+                "firstPay": 0.54,
+                "firstRepayDate": "2025-11-16",
+                "isDiscount": false,
+                "isMaxDiscount": false,
+                "laterPay": 0.54,
+                "mainTitle": "￥0.54 x 24期",
+                "plan": 24,
+                "planFee": 0.09,
+                "rate": 0.8,
+                "secondTitle": "含服务费：费率0.80%，￥0.09&times;24期",
+                "total": 12.96
+            }
+        ],
+        "planRate": 0.80,
+        "propMarketText": "",
+        "url": "//bt.jd.com/v3/activity/open?rid=1760616417126",
+        "ver": "1"
+    },
+    "promiseFxgInfo": {},
+    "isFsAndCustom": false,
+    "beltBanner": "//img30.360buyimg.com/jdg/jfs/t1/85736/29/20497/1613/61d6886bE3c37eeb9/8969ee73a9bf3cf4.jpg",
+    "csfhText": "厂商发货",
+    "isLogin": true,
+    "commonLimitInfo": {
+        "limitBuyInfo": {},
+        "limitMinNum": "1",
+        "limitText": "最多可购买9999件",
+        "mergeMaxBuyNum": "9999",
+        "resultExtMap": {
+            "noSaleFlag": "0",
+            "limitNum": "9999",
+            "strategyFlag": "1",
+            "canBuyPlusSku": "1",
+            "limitUserFlag": "1",
+            "mergeMaxBuyNumInfo": "{\"mergeMaxBuyNum\":9999,\"strategyId\":2807561013,\"type\":1}",
+            "sourceChannel": "ERP",
+            "ruleTypeDesc": "每单最多可以购买9999件",
+            "limitPreOrderNum": "9999",
+            "peopleLimitCanBuyMap": "{\"20005\":{\"isLimit\":\"0\",\"canBuy\":\"1\"},\"20004\":{\"isLimit\":\"0\",\"canBuy\":\"1\"},\"20003\":{\"isLimit\":\"0\",\"canBuy\":\"1\"},\"20022\":{\"isLimit\":\"0\",\"canBuy\":\"1\"},\"20021\":{\"isLimit\":\"0\",\"canBuy\":\"1\"}}",
+            "limitPeopleFlag": "1",
+            "limitBuyStrategyList": "[{\"limitValue\":\"0\",\"strategyName\":\"数据迁移_100034965528\",\"sourceChannel\":\"ERP\",\"gatherId\":\"100034965528\",\"gatherType\":\"sku\",\"strategyId\":\"2807561013\",\"beginTime\":\"2025-07-30 18:14:05\",\"endTime\":\"2028-07-30 18:14:05\",\"limitPreOrderNum\":\"9999\",\"limitType\":\"0\"}]",
+            "canBuy": "1",
+            "limitText": "最多可购买9999件",
+            "isPlusLimit": "0",
+            "spuStrategyFlag": "0",
+            "mergeMaxBuyNum": "9999",
+            "beginTime": "2025-07-30 18:14:05",
+            "endTime": "2028-07-30 18:14:05",
+            "isPaidMemberSku": "0",
+            "limitAreaFlag": "1"
+        }
+    },
+    "isInstallNow": false,
+    "govSupportInfo": {
+        "ab": true,
+        "beltBanner": "//img30.360buyimg.com/jdg/jfs/t1/263547/24/18280/20997/67a96901F1bef1e77/fcce6b07199642ff.png",
+        "cloudPay": false,
+        "govSubsidy": false,
+        "govSupport": false,
+        "rightText": "",
+        "subsidyScene": "0",
+        "subsidyType": "",
+        "subsidyUserStatus": "",
+        "yellowBar": false
+    },
+    "price": {
+        "ab": true,
+        "hagglePromotion": false,
+        "id": "100034965528",
+        "m": "25.90",
+        "op": "15.90",
+        "p": "10.80",
+        "regularPrice": "10.80"
+    },
+    "ipCityCode": "2837",
+    "wareInfoReadMap": {
+        "thwa": "2",
+        "cn_brand": "海天",
+        "is7ToReturn": "1",
+        "SendService": "0",
+        "vender_name": "北京京东世纪信息技术有限公司",
+        "product_id": "100034965528",
+        "timeliness_id": "",
+        "height": "55",
+        "unLimit_cid": "36232",
+        "mspd": "1",
+        "shop_id": "1000013962",
+        "buyer_post": "11680",
+        "size": "",
+        "sale_attributes": "[{\"dim\":1,\"saleName\":\"规格\",\"saleValue\":\"【0添加】0金标蚝油625g\",\"sequenceNo\":5}]",
+        "img_dfs_url": "jfs/t1/336950/25/19850/107724/68ee16c9F048deccd/1e0b2f3a954df2a1.jpg",
+        "category_id": "36232",
+        "product_features": "",
+        "isdangergoods": "0",
+        "jc_saler": "wangkuobang",
+        "day_limited_sales": "0",
+        "wjtyd": "1",
+        "IsYouShelfLife": "1",
+        "isJIT": "0",
+        "cxkfl": "1",
+        "vender_attribute": ",HYS001,",
+        "features": "inputVAT:13,consumptionVAT:0,outputVAT:13",
+        "pay_first": "0",
+        "weight": "0.690",
+        "isDistribution": "0",
+        "template_ids": "[601005984,601075973,601588452]",
+        "shop_name": "海天京东自营旗舰店",
+        "brand_id": "7876",
+        "size_sequence": "0",
+        "color": "【0添加】0金标蚝油625g",
+        "isCanUseJQ": "1",
+        "spec_sequence": "0",
+        "shelf_life": "540",
+        "vender_id": "1000013962",
+        "MiniRDC": "1",
+        "isQdh": "0",
+        "xscjh": "363,382,377,355,364,331,335,353,360,354,356,367,301,349,378,366,321,369,372,370,375,374,337,520,458,496,380,483,381,371,365,352,373,362,338,359,351,358,361,484,368,376",
+        "category_id1": "34884",
+        "category_id2": "34942",
+        "sfkc": "0",
+        "delivery": "",
+        "companyType": "0",
+        "length": "220",
+        "sku_status": "1",
+        "spec_name": "",
+        "mscsmqd": "1",
+        "main_sku_id": "100024009400",
+        "isCanUseDQ": "1",
+        "yn": "1",
+        "warranty": "无质保",
+        "sku_name": "海天 蚝油 0添加防腐剂 625g 0金标调味品 挤挤装 烹调点蘸凉拌",
+        "supply_unit": "sqdy",
+        "subZtType": "SPGX-XXNZT",
+        "color_sequence": "5",
+        "GiftsGoods": "0",
+        "storeProperty": "0",
+        "qzcsp": "0",
+        "vender_col_type": "0",
+        "vender_bizid": "",
+        "width": "80",
+        "features2": "cxkfl:1;gjyslx:16;gypsshyzt:106_1,105_1,104_2,108_1,109_1,110_1,102_1,111_2,112_1,103_2;isTimeOrder:0;isYjyChannelPool:1;isYjySkuPool:1;isrc:1;jdcsk:1;kcdwsp:3;mscsmqd:1;oneItemId:788250087002637500;shortTitle:海天0金标蚝油625g;skuNameWithoutBrand: 蚝油 0添加防腐剂 625g 0金标调味品 挤挤装 烹调点蘸凉拌;subZtType:SPGX-XXNZT;xxhf:1",
+        "spec": "",
+        "maxCartCat": "999",
+        "SoldOversea": "4",
+        "Customize": "0",
+        "isXfpDept": "1",
+        "product_name": "海天 蚝油 0添加防腐剂 625g 0金标调味品 挤挤装 烹调点蘸凉拌",
+        "kcdwsp": "3",
+        "IsJDMarket": "1",
+        "xxhf": "1",
+        "isOverseaPurchase": "0",
+        "platform": "1",
+        "sku_mark": "8192",
+        "item_id": "-1",
+        "isTimeOrder": "0"
+    },
+    "isCsfh": false,
+    "miaoshaInfo": {
+        "bannerUrl": "//img30.360buyimg.com/jdg/jfs/t1/85736/29/20497/1613/61d6886bE3c37eeb9/8969ee73a9bf3cf4.jpg",
+        "endTime": 1760630399000,
+        "koDarkMoon": false,
+        "koYgDarkMoon": false,
+        "miaosha": true,
+        "miaoshaRemainTime": 13981,
+        "msTrailer": "距离结束",
+        "originPrice": "15.9",
+        "promoPrice": "10.8",
+        "seckillType": "1",
+        "startTime": 1760443200000,
+        "state": 2,
+        "title": "京东秒杀"
+    },
+    "isSfkd": false,
+    "beltBannerInfo": {
+        "bannerLeftIcon": "http://img30.360buyimg.com/jdg/jfs/t1/257885/27/14677/4806/679111b0Ff0fa8569/5dbb13cf3edf8161.png",
+        "bannerRightText": "距离结束",
+        "bannerRightTextColor": "",
+        "beltBannerUrl": "//img30.360buyimg.com/jdg/jfs/t1/262470/2/14705/18321/679111aaFdb4dd86d/be50ed4b5081c761.png",
+        "countDown": 13981,
+        "countdownTextColor": "#ff0031",
+        "labels": "",
+        "leftArrowIcon": "",
+        "leftIconLink": "",
+        "middleIcon": "http://img30.360buyimg.com/jdg/jfs/t1/260046/5/23853/13314/67bc72ccF5de00023/4660a8ebfce67e63.png",
+        "subsidyType": "",
+        "subsidyUserStatus": "",
+        "type": "4",
+        "yuYueNum": 0
+    },
+    "abData": {
+        "indicator": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0Xzc0MzYzfHByZQ|tsabtest",
+            "business": "indicator",
+            "keyParamMap": {},
+            "label": "pre",
+            "success": true
+        },
+        "preference_rebuild": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0Xzg4MjA2fHByZQ|tsabtest",
+            "keyParamMap": {},
+            "label": "pre",
+            "success": true,
+            "type": "12"
+        },
+        "pc_rank": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0Xzk4Mzg3fHNoaXlhbnp1X2JhbmdkYW4|tsabtest",
+            "keyParamMap": {
+                "duizhaozu": 1
+            },
+            "label": "shiyanzu_bangdan",
+            "success": true,
+            "type": "13"
+        },
+        "multi_price": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0XzgxNjQ4fGJlc3Q|tsabtest",
+            "business": "multi_price",
+            "keyParamMap": {
+                "hit": 1
+            },
+            "label": "best",
+            "success": true
+        },
+        "new_people": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0Xzk5ODE2fHhpbnJlbg|tsabtest",
+            "keyParamMap": {
+                "new_user": 1
+            },
+            "label": "xinren",
+            "success": true,
+            "type": "16"
+        },
+        "item_pk": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0XzcyNjUyfGJhc2U|tsabtest",
+            "business": "item_pk",
+            "keyParamMap": {},
+            "label": "base",
+            "success": true
+        },
+        "main_image": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0XzgzNTg3fHByZTI|tsabtest",
+            "business": "main_image",
+            "keyParamMap": {
+                "first_show": 2
+            },
+            "label": "pre2",
+            "success": true
+        },
+        "abTags": [
+            "tsabtest|base64|UENUZXN0Xzk4Mzg3fHNoaXlhbnp1X2JhbmdkYW4|tsabtest",
+            "tsabtest|base64|UGNBQlRlc3RfNzg3NTh8cHJl|tsabtest",
+            "tsabtest|base64|UENUZXN0XzcxMzY2fGJhc2U|tsabtest",
+            "tsabtest|base64|UENUZXN0Xzc0MzYzfHByZQ|tsabtest",
+            "tsabtest|base64|UENUZXN0XzgxNzI1fGJhc2U|tsabtest",
+            "tsabtest|base64|UENUZXN0XzgzNTg3fHByZTI|tsabtest",
+            "tsabtest|base64|UENUZXN0Xzk1ODAxfHNoaXlhbnp1X3Br|tsabtest",
+            "tsabtest|base64|U01CQUJUZXN0Xzg0MTY1fHByZQ|tsabtest",
+            "tsabtest|base64|UENUZXN0Xzk4OTk3fGJhc2U|tsabtest",
+            "tsabtest|base64|UENUZXN0Xzc5MDE3fGJlc3Q|tsabtest",
+            "tsabtest|base64|UENUZXN0XzcxNzM4fGJhc2U|tsabtest",
+            "tsabtest|base64|UENUZXN0Xzg4MjA2fHByZQ|tsabtest",
+            "tsabtest|base64|UENUZXN0XzgxNjQ4fGJlc3Q|tsabtest",
+            "tsabtest|base64|UENUZXN0XzcyNjUyfGJhc2U|tsabtest",
+            "tsabtest|base64|UENUZXN0Xzk5ODE2fHhpbnJlbg|tsabtest"
+        ],
+        "promotion_optimize": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0Xzc5MDE3fGJlc3Q|tsabtest",
+            "business": "promotion_optimize",
+            "keyParamMap": {
+                "hit": 1
+            },
+            "label": "best",
+            "success": true
+        },
+        "xundan_guide": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0Xzk4OTk3fGJhc2U|tsabtest",
+            "keyParamMap": {
+                "duizhaozu": 0
+            },
+            "label": "base",
+            "success": true,
+            "type": "15"
+        },
+        "enPlus_price": {
+            "abBuriedTag": "tsabtest|base64|UGNBQlRlc3RfNzg3NTh8cHJl|tsabtest",
+            "business": "enPlus_price",
+            "keyParamMap": {},
+            "label": "pre",
+            "success": true
+        },
+        "enterprise_plus_guide": {
+            "abBuriedTag": "tsabtest|base64|U01CQUJUZXN0Xzg0MTY1fHByZQ|tsabtest",
+            "keyParamMap": {
+                "duizhaozu": 1
+            },
+            "label": "pre",
+            "success": true,
+            "type": "14"
+        },
+        "item_gov_price": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0XzcxMzY2fGJhc2U|tsabtest",
+            "business": "item_gov_price",
+            "keyParamMap": {},
+            "label": "base",
+            "success": true
+        },
+        "shiyanzu_pk": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0Xzk1ODAxfHNoaXlhbnp1X3Br|tsabtest",
+            "business": "shiyanzu_pk",
+            "keyParamMap": {
+                "pklevelup_test": 1
+            },
+            "label": "shiyanzu_pk",
+            "success": true
+        },
+        "item_gb2": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0XzgxNzI1fGJhc2U|tsabtest",
+            "business": "item_gb2",
+            "keyParamMap": {},
+            "label": "base",
+            "success": true
+        },
+        "item_gb_fastTest": {
+            "abBuriedTag": "tsabtest|base64|UENUZXN0XzcxNzM4fGJhc2U|tsabtest",
+            "business": "item_gb_fastTest",
+            "keyParamMap": {},
+            "label": "base",
+            "success": true
+        }
+    },
+    "ext": {
+        "govAb": true,
+        "appleLimit": true,
+        "multiAddCart": true,
+        "entExc": true,
+        "defaultUmc": true,
+        "hxSubsidy": true,
+        "bjkPrice": true,
+        "xundanGuide": true
+    },
+    "isServiceJdkd": false,
+    "rankInfoList": [
+        {
+            "rankName": "蚝油热卖榜·第1名",
+            "rankTypeInt": 10,
+            "rankUrl": "https://pro.jd.com/mall/active/4JRfHorUDXgL77E9YdNxSCNMKwkJ/index.html?pageNum=1&bbtf=1&queryType=1&rankId=3166501&rankType=10&fromName=ProductdetailPC&preSrc=null&currSku=100034965528&currSpu=100024009400"
+        }
+    ],
+    "preference": {
+        "preferenceLabel": [
+            {
+                "labelName": "满200减30",
+                "type": "4"
+            },
+            {
+                "labelName": "限5件特惠",
+                "type": "2"
+            },
+            {
+                "labelName": "满额返券",
+                "type": "2"
+            }
+        ],
+        "preferencePopUp": {
+            "joinOrderPreference": [
+                {
+                    "bigPromotion": false,
+                    "brandCoupon": false,
+                    "businessLabel": "204",
+                    "couponStyle": 0,
+                    "couponType": 1,
+                    "crossStoreFullCut": false,
+                    "discount": "30",
+                    "encryptedKey": "g7uai9d7e12908294af8cb0669cb833b",
+                    "endTime": "2025.10.16 23:59",
+                    "formal": false,
+                    "joinFlag": true,
+                    "originType": "1",
+                    "preferenceId": "1321153670",
+                    "preferenceType": "4",
+                    "quota": "200",
+                    "roleId": "1475362700",
+                    "toUrl": "//search.jd.com/Search?coupon_batch=1321153670",
+                    "value": "满200减30"
+                },
+                {
+                    "bigPromotion": false,
+                    "brandCoupon": false,
+                    "businessLabel": "204",
+                    "couponStyle": 0,
+                    "couponType": 1,
+                    "crossStoreFullCut": false,
+                    "discount": "20",
+                    "encryptedKey": "gfu0i2dbef260e22578e77211e8cb5a8",
+                    "endTime": "2025.10.16 23:59",
+                    "formal": false,
+                    "joinFlag": true,
+                    "originType": "1",
+                    "preferenceId": "1410695177",
+                    "preferenceType": "4",
+                    "quota": "200",
+                    "roleId": "1438793400",
+                    "toUrl": "//search.jd.com/Search?coupon_batch=1410695177",
+                    "value": "满200减20"
+                },
+                {
+                    "bigPromotion": false,
+                    "brandCoupon": false,
+                    "businessLabel": "204",
+                    "couponStyle": 0,
+                    "couponType": 1,
+                    "crossStoreFullCut": false,
+                    "discount": "20",
+                    "encryptedKey": "g1u9i4d0ec2e0727426d968f4b38b76b",
+                    "endTime": "2025.10.29 23:59",
+                    "formal": false,
+                    "joinFlag": true,
+                    "originType": "1",
+                    "preferenceId": "1386476291",
+                    "preferenceType": "4",
+                    "quota": "200",
+                    "roleId": "1452930702",
+                    "toUrl": "//search.jd.com/Search?coupon_batch=1386476291",
+                    "value": "满200减20"
+                },
+                {
+                    "bigPromotion": false,
+                    "brandCoupon": false,
+                    "businessLabel": "204",
+                    "couponStyle": 0,
+                    "couponType": 1,
+                    "crossStoreFullCut": false,
+                    "discount": "10",
+                    "encryptedKey": "gauaidd8e72a022b547afd69c6cfe5e4",
+                    "endTime": "2025.10.16 23:59",
+                    "formal": false,
+                    "joinFlag": true,
+                    "originType": "1",
+                    "preferenceId": "1311745582",
+                    "preferenceType": "4",
+                    "quota": "99",
+                    "roleId": "1439172907",
+                    "toUrl": "//search.jd.com/Search?coupon_batch=1311745582",
+                    "value": "满99减10"
+                },
+                {
+                    "bigPromotion": false,
+                    "crossStoreFullCut": false,
+                    "customTag": {},
+                    "formal": false,
+                    "link": "//search.jd.com/Search?activity_id=299319778948",
+                    "logPromoId": "299319778948",
+                    "originType": "2",
+                    "preferenceId": "299319778948",
+                    "preferenceType": "4",
+                    "promoId": 299319778948,
+                    "promoTags": [
+                        34,
+                        27
+                    ],
+                    "tag": 19,
+                    "text": "跨自营/店铺满折",
+                    "value": "满2件，总价打9折"
+                },
+                {
+                    "bigPromotion": false,
+                    "crossStoreFullCut": false,
+                    "customTag": {},
+                    "formal": false,
+                    "logPromoId": "303547955924",
+                    "originType": "2",
+                    "preferenceId": "303547955924",
+                    "preferenceType": "4",
+                    "proSortNum": 160,
+                    "promoId": 303547955924,
+                    "promoTags": [
+                        1040
+                    ],
+                    "tag": 16,
+                    "text": "满送",
+                    "typeNumber": "16",
+                    "value": "满59元即赠热销商品，赠完即止"
+                }
+            ],
+            "morePreference": [
+                {
+                    "bigPromotion": false,
+                    "crossStoreFullCut": false,
+                    "formal": false,
+                    "link": "//pro.jd.com/mall/active/44vGsYvcjuMgw7VzKVKBzfCk49Rf/index.html?babelChannel=ttt1",
+                    "originType": "2",
+                    "preferenceType": "2",
+                    "proSortNum": 60,
+                    "text": "满额返券",
+                    "typeNumber": "",
+                    "value": "实付满1元，收货后返满100-10元券，先到先得，点击跳转活动落地页（仅app可跳转）"
+                },
+                {
+                    "bigPromotion": false,
+                    "crossStoreFullCut": false,
+                    "customTag": {
+                        "p": "10.80"
+                    },
+                    "formal": false,
+                    "logPromoId": "325076005293",
+                    "originType": "2",
+                    "preferenceId": "325076005293",
+                    "preferenceType": "2",
+                    "promoId": 325076005293,
+                    "promoTags": [
+                        10001
+                    ],
+                    "shortText": "限5件特惠",
+                    "tag": 3,
+                    "text": "限购",
+                    "typeNumber": "3",
+                    "value": "特价品，购买1-5件时可享受单件价￥10.80，超出数量或优惠库存以结算价为准，仅限购买一次"
+                }
+            ],
+            "sharedPreference": []
+        }
+    },
+    "wareInfo": {
+        "extend": {},
+        "wareInfoMap": {
+            "sku_status": "1"
+        }
+    },
+    "itemShopInfo": {
+        "followCount": 4943917,
+        "isYearFiveStarTab": false,
+        "shopIconImg": "//img11.360buyimg.com/img/jfs/t1/273656/23/29811/731/681b1e9aF9ce3b5bc/6102ba8228118daf.png",
+        "shopId": 1000013962,
+        "shopLongLogo": "http://img30.360buyimg.com/popshop/jfs/t1/25841/14/8575/4101/5c775c42E7a593c62/c8321ab7fbac1a24.gif",
+        "shopName": "海天京东自营旗舰店",
+        "venderType": "1"
+    },
+    "govTextSwitch": true,
+    "stockInfo": {
+        "deliveryInfo": {
+            "state": "SUPPORT",
+            "support": true
+        },
+        "isPlus": false,
+        "code": 1,
+        "promiseInfoText": "23:10前付款，预计<b>明天(10月17日)</b>送达",
+        "realStockState": "33",
+        "promiseResult": "23:10前付款，预计<b>明天(10月17日)</b>送达",
+        "serviceInfo": "由 <span class='hl_red'>京东</span> 发货, 并提供售后服务. ",
+        "stockDesc": "<strong>有货</strong>",
+        "weightValue": "0.69kg",
+        "fxgCode": "0",
+        "is7ToReturn": "支持7天无理由退货（一次性包装破损不支持）",
+        "stockState": 33,
+        "stockInfo": {
+            "ae": 0,
+            "ag": "-1",
+            "ah": -1,
+            "at": "-1",
+            "availableNum": -1,
+            "businessType": 0,
+            "ca": -1,
+            "da": "-1",
+            "date": "",
+            "dc": "-1",
+            "dcId": 3,
+            "dcIdDely": 3,
+            "ef": 0,
+            "eh": -1,
+            "ej": "-1",
+            "ek": -1,
+            "freshEdi": 0,
+            "popPatType": -1,
+            "preStore": -1,
+            "railModel": 0,
+            "reservationType": "OTHER",
+            "rid": -1,
+            "sidDely": 2308,
+            "siteId4Dada": -1,
+            "stDely": 1,
+            "stockM": 0,
+            "stockState": "AVAILABLE",
+            "stockV": 0,
+            "storeId": 2308,
+            "storeId4Dada": -1,
+            "storeState4Dada": -1,
+            "storeType": 1,
+            "useStockNum": 0
+        },
+        "supportHKMOShip": true,
+        "serverIcon": {
+            "basicNewIcons": [
+                {
+                    "code": "free_delivery_zhong",
+                    "helpLink": "//help.jd.com/user/issue/103-983.html",
+                    "iconServiceType": 4,
+                    "text": "59元免基础运费",
+                    "tip": "所选地址自营订单满59元免基础运费(20kg内)，超出重量加收1元/kg续重运费。"
+                },
+                {
+                    "code": "commonpd_distribution_global",
+                    "text": "可配送全球",
+                    "tip": "支持港澳台及海外收货地址下单，由于各地区政策不同，具体请以结算页详情为准"
+                },
+                {
+                    "code": "s26",
+                    "helpLink": "https://help.jd.com/user/issue/291-4537.html",
+                    "text": "7天价保",
+                    "tip": "在下单或签收7天内，商品出现降价可享受价保服务（商品在消费者下单后因参与百亿补贴、政府补贴等活动导致降价不支持价保），可点击“>”了解详细规则"
+                },
+                {
+                    "code": "s24",
+                    "helpLink": "//help.jd.com/user/issue/942-3837.html",
+                    "text": "破损包退换",
+                    "tip": "签收后72小时内（鱼缸类商品需24小时内）发现非用户原因商品破损问题，提供退换货或补发商品等服务"
+                },
+                {
+                    "code": "s6",
+                    "text": "闪电退款",
+                    "tip": "京东优质用户提交售后申请退货时，满足相关条件可立即退款"
+                },
+                {
+                    "code": "s9",
+                    "helpLink": "//help.jd.com/user/issue/942-1656.html",
+                    "text": "上门换新",
+                    "tip": "售后换货时，一次上门取旧送新，先发出新商品，快递员上门配送新商品的同时取回原商品。"
+                },
+                {
+                    "code": "s115",
+                    "text": "免费上门退换",
+                    "tip": "售后时效内申请退换货，选择上门取件优先安排京东物流服务，无需支付退换货运费；选择自寄，售后完成后补首重运费。"
+                },
+                {
+                    "code": "deliveryAndAfterSales",
+                    "text": "京东发货&售后服务",
+                    "tip": "京东发货&售后服务"
+                },
+                {
+                    "text": "支持7天无理由退货（一次性包装破损不支持）"
+                }
+            ],
+            "wlfwIcons": [
+                {
+                    "code": "sendpay_zhun",
+                    "helpLink": "//help.jd.com/user/issue/103-983.html",
+                    "iconServiceType": 1,
+                    "text": "京准达",
+                    "tip": "选择京准达服务，可指定精确时间点收货；若京东责任超时，即时赔付"
+                },
+                {
+                    "code": "sendpay_211",
+                    "helpLink": "https://help.jd.com/user/issue/91-953.html",
+                    "iconServiceType": 1,
+                    "text": "211限时达",
+                    "tip": "上午下单，下午送达"
+                },
+                {
+                    "code": "sendpay_nextday",
+                    "helpLink": "//help.jd.com/user/issue/103-983.html",
+                    "iconServiceType": 1,
+                    "text": "明日达",
+                    "tip": "指定时间前下单，最快明日达"
+                },
+                {
+                    "code": "service_yysh",
+                    "helpLink": "//help.jd.com/user/issue/103-983.html",
+                    "iconServiceType": 6,
+                    "text": "预约送货",
+                    "tip": "京东物流为该商品提供预约送货服务"
+                },
+                {
+                    "code": "service_bfsh",
+                    "helpLink": "https://help.jd.com/user/issue/103-983.html",
+                    "iconServiceType": 6,
+                    "text": "部分收货",
+                    "tip": "如果收件人收货时发现部分货物存在缺少配件、物流损等情形，京东物流提供订单半收服务"
+                },
+                {
+                    "code": "service_sssm",
+                    "helpLink": "https://help.jd.com/user/issue/254-4130.html",
+                    "iconServiceType": 6,
+                    "text": "送货上门",
+                    "tip": "京东快递为您提供送货上门服务"
+                },
+                {
+                    "code": "special_ziti",
+                    "helpLink": "//help.jd.com/user/issue/103-983.html",
+                    "iconServiceType": 5,
+                    "text": "自提",
+                    "tip": "我们提供多种自提服务，包括京东自提点、自助提货柜、京东校园派、京东星配站、京东便民站等服务"
+                }
+            ],
+            "basicIcons": [
+                {
+                    "code": "free_delivery_zhong",
+                    "helpLink": "//help.jd.com/user/issue/103-983.html",
+                    "iconServiceType": 4,
+                    "text": "59元免基础运费",
+                    "tip": "所选地址自营订单满59元免基础运费(20kg内)，超出重量加收1元/kg续重运费。"
+                },
+                {
+                    "code": "commonpd_distribution_global",
+                    "text": "可配送全球",
+                    "tip": "支持港澳台及海外收货地址下单，由于各地区政策不同，具体请以结算页详情为准"
+                },
+                {
+                    "code": "s26",
+                    "helpLink": "https://help.jd.com/user/issue/291-4537.html",
+                    "text": "7天价保",
+                    "tip": "在下单或签收7天内，商品出现降价可享受价保服务（商品在消费者下单后因参与百亿补贴、政府补贴等活动导致降价不支持价保），可点击“>”了解详细规则"
+                },
+                {
+                    "code": "s24",
+                    "helpLink": "//help.jd.com/user/issue/942-3837.html",
+                    "text": "破损包退换",
+                    "tip": "签收后72小时内（鱼缸类商品需24小时内）发现非用户原因商品破损问题，提供退换货或补发商品等服务"
+                },
+                {
+                    "code": "s6",
+                    "text": "闪电退款",
+                    "tip": "京东优质用户提交售后申请退货时，满足相关条件可立即退款"
+                },
+                {
+                    "code": "s9",
+                    "helpLink": "//help.jd.com/user/issue/942-1656.html",
+                    "text": "上门换新",
+                    "tip": "售后换货时，一次上门取旧送新，先发出新商品，快递员上门配送新商品的同时取回原商品。"
+                },
+                {
+                    "code": "s115",
+                    "text": "免费上门退换",
+                    "tip": "售后时效内申请退换货，选择上门取件优先安排京东物流服务，无需支付退换货运费；选择自寄，售后完成后补首重运费。"
+                }
+            ]
+        },
+        "support": [],
+        "isStock": true
+    },
+    "isSamMember": false,
+    "limitBuyInfo": {},
+    "isPlusMember": "4",
+    "isJdkd": false,
+    "isJdwl": true,
+    "promotion": {
+        "canReturnHaggleInfo": false,
+        "isBargain": false,
+        "isTwoLine": false,
+        "limitBuyInfo": {
+            "limitNum": "9999",
+            "noSaleFlag": "0",
+            "resultExt": {
+                "noSaleFlag": "0",
+                "limitNum": "9999",
+                "strategyFlag": "1",
+                "canBuyPlusSku": "1",
+                "limitUserFlag": "1",
+                "mergeMaxBuyNumInfo": "{\"mergeMaxBuyNum\":9999,\"strategyId\":2807561013,\"type\":1}",
+                "sourceChannel": "ERP",
+                "ruleTypeDesc": "每单最多可以购买9999件",
+                "limitPreOrderNum": "9999",
+                "peopleLimitCanBuyMap": "{\"20005\":{\"isLimit\":\"0\",\"canBuy\":\"1\"},\"20004\":{\"isLimit\":\"0\",\"canBuy\":\"1\"},\"20003\":{\"isLimit\":\"0\",\"canBuy\":\"1\"},\"20022\":{\"isLimit\":\"0\",\"canBuy\":\"1\"},\"20021\":{\"isLimit\":\"0\",\"canBuy\":\"1\"}}",
+                "limitPeopleFlag": "1",
+                "limitBuyStrategyList": "[{\"limitValue\":\"0\",\"strategyName\":\"数据迁移_100034965528\",\"sourceChannel\":\"ERP\",\"gatherId\":\"100034965528\",\"gatherType\":\"sku\",\"strategyId\":\"2807561013\",\"beginTime\":\"2025-07-30 18:14:05\",\"endTime\":\"2028-07-30 18:14:05\",\"limitPreOrderNum\":\"9999\",\"limitType\":\"0\"}]",
+                "canBuy": "1",
+                "limitText": "最多可购买9999件",
+                "isPlusLimit": "0",
+                "spuStrategyFlag": "0",
+                "mergeMaxBuyNum": "9999",
+                "beginTime": "2025-07-30 18:14:05",
+                "endTime": "2028-07-30 18:14:05",
+                "isPaidMemberSku": "0",
+                "limitAreaFlag": "1"
+            }
+        },
+        "prompt": ""
+    },
+    "tracerId": "10108149645-117809-1760616417031",
+    "brandVipInfo": {
+        "vip": false
+    }
+}
