@@ -2,9 +2,9 @@ export const SOURCES = ["URL", "商鋪"] as const;
 export const SOURCE_KEYS = ["url", "shop"] as const;
 
 export const CATEGORIES = [
-  "電器", "數碼", "家電", "家俱", "廚用", "衞浴", 
-  "家紡", "衣物", "服裝", "書籍", "食品", "醫用", 
-  "藥用", "水果", "零食", "飲品", "五金", "糧食"
+  "電器", "數碼", "家電", "家俱", "廚用", "衞浴",
+  "家紡", "衣物", "服裝", "書籍", "食品", "醫用",
+  "藥用", "水果", "零食", "飲品", "五金", "糧油"
 ] as const;
 
 export const CATEGORY_KEYS = [
