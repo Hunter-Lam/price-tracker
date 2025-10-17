@@ -147,6 +147,15 @@ const AppContent: React.FC = () => {
 
   const onFinishFailed: FormProps<FormData>["onFinishFailed"] = (errorInfo) => {
     console.log("表單提交失敗:", errorInfo);
+
+    // Focus on the first field with error
+    if (errorInfo.errorFields && errorInfo.errorFields.length > 0) {
+      const firstErrorField = errorInfo.errorFields[0].name;
+      form.scrollToField(firstErrorField, {
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
   };
 
   const handleSourceTypeChange = useCallback((rule: Array<{ type: string }>) => {
