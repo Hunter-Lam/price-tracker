@@ -126,8 +126,20 @@ export class JDProductParser implements IProductInfoParser {
       warnings.push('Product name not found');
     }
 
-    // Extract brand
-    const brand = json.wareInfoReadMap?.cn_brand || '';
+    // Extract brand (Chinese and English)
+    let brand = json.wareInfoReadMap?.cn_brand || '';
+
+    // Try to extract English brand from product name and combine with Chinese brand
+    // Format in title: "三星（SAMSUNG）..." or "苹果（Apple）..."
+    if (title && brand) {
+      const enBrandMatch = title.match(/（([A-Z][A-Za-z0-9\s&]+)）/);
+      if (enBrandMatch) {
+        const brandEn = enBrandMatch[1].trim();
+        // Combine as: "三星（SAMSUNG）"
+        brand = `${brand}（${brandEn}）`;
+      }
+    }
+
     if (!brand) {
       warnings.push('Brand not found');
     }
