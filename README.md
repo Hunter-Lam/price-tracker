@@ -86,24 +86,14 @@ garbled
 1.4 ---
 excel import
 
+parse product info button $1
+jd info formats and calibration $28.87
+JD product parser extract brand name $9.26
+
+
 show download location
 select downlaod location
 數量 x mL,L,兩,斤,kg,g,piece
-
-
-    "price": {
-        "ab": true,
-        "hagglePromotion": false,
-        "id": "100034965528",
-        "m": "25.90",
-        "op": "15.90",
-        "p": "10.80",
-        "regularPrice": "10.80"
-    },
-
-    m means max
-    op means original price
-    p means price
 
 
 
@@ -223,4 +213,3 @@ iPhone16Pro
 优惠券
 ¥200
 满500减200
-
