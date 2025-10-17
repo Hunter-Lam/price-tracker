@@ -1,5 +1,6 @@
 import type { IProductInfoParser, ParseResult } from './types';
 import { JDProductParser } from './JDProductParser';
+import { TaobaoProductParser } from './TaobaoProductParser';
 import { PlainTextParser } from './PlainTextParser';
 
 /**
@@ -12,8 +13,10 @@ export class ParserManager {
   constructor() {
     // Register all available parsers
     // Order matters: parsers are tried in sequence
+    // More specific parsers should come before generic ones
     this.registerParser(new JDProductParser());
-    this.registerParser(new PlainTextParser());
+    this.registerParser(new TaobaoProductParser());
+    this.registerParser(new PlainTextParser()); // Fallback generic parser
   }
 
   /**

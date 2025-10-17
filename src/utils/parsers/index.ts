@@ -27,5 +27,6 @@
 
 export { ParserManager } from './ParserManager';
 export { JDProductParser } from './JDProductParser';
+export { TaobaoProductParser } from './TaobaoProductParser';
 export { PlainTextParser } from './PlainTextParser';
 export type { IProductInfoParser, ParseResult } from './types';

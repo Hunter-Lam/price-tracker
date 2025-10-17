@@ -182,9 +182,11 @@
       "amountDiscount": "滿折",
       "quantityDiscount": "滿件折",
       "thresholdReduction": "滿減",
+      "quantityReduction": "滿件減",
       "everyReduction": "每滿減",
       "instantReduction": "立減",
-      "firstPurchase": "首購"
+      "firstPurchase": "首購",
+      "limitedPurchase": "限購"
     }
   },
   "columnController": {
@@ -240,7 +242,7 @@
   "pasteParser": {
     "title": "貼上產品資訊",
     "pasteButton": "貼上",
-    "placeholder": "請在此貼上產品資訊...\n\n支援的格式：\n- 京東商品資訊 JSON\n- 電商網站純文字（標題、價格、優惠）",
+    "placeholder": "請在此貼上產品資訊...\n\n支援的格式：\n- 京東商品資訊 JSON\n- 淘寶/天貓商品資訊（帶參數信息）\n- 電商網站純文字",
     "parseButton": "解析",
     "clear": "清空",
     "cancel": "取消",

@@ -183,9 +183,11 @@
       "amountDiscount": "Tiered Discount Rate",
       "quantityDiscount": "Quantity Discount",
       "thresholdReduction": "Spend & Save",
+      "quantityReduction": "Quantity Reduction",
       "everyReduction": "Tiered Reduction",
       "instantReduction": "Instant Reduction",
-      "firstPurchase": "First Purchase"
+      "firstPurchase": "First Purchase",
+      "limitedPurchase": "Limited Purchase"
     }
   },
   "columnController": {
@@ -241,7 +243,7 @@
   "pasteParser": {
     "title": "Paste Product Information",
     "pasteButton": "Paste",
-    "placeholder": "Paste product information here...\n\nSupported formats:\n- JD.com product info JSON\n- Plain text from e-commerce sites (title, prices, discounts)",
+    "placeholder": "Paste product information here...\n\nSupported formats:\n- JD.com product info JSON\n- Taobao/Tmall product info (with parameters)\n- Plain text from e-commerce sites",
     "parseButton": "Parse",
     "clear": "Clear",
     "cancel": "Cancel",

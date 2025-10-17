@@ -18,13 +18,13 @@ export const DISCOUNT_ORGANIZER_KEYS = ["government", "platform", "store", "paym
 
 export const DISCOUNT_METHODS = [
   "折扣", "滿折", "滿件折",
-  "滿減", "每滿減", "立減",
-  "首購"
+  "滿減", "滿件減", "每滿減", "立減",
+  "首購", "限購"
 ] as const;
 export const DISCOUNT_METHOD_KEYS = [
   "discount", "amountDiscount", "quantityDiscount",
-  "thresholdReduction", "everyReduction", "instantReduction",
-  "firstPurchase"
+  "thresholdReduction", "quantityReduction", "everyReduction", "instantReduction",
+  "firstPurchase", "limitedPurchase"
 ] as const;
 
 export type SourceType = typeof SOURCES[number];
