@@ -28,6 +28,10 @@ interface JDProductInfo {
         text?: string;
         value?: string;
         preferenceType?: string;
+        tag?: number;              // e.g., 3 for limit purchase
+        customTag?: {
+          p?: string;              // Limit purchase price
+        };
       }>;
       expression?: {
         basePrice?: string;
@@ -130,13 +134,22 @@ export class JDProductParser implements IProductInfoParser {
     let brand = json.wareInfoReadMap?.cn_brand || '';
 
     // Try to extract English brand from product name and combine with Chinese brand
-    // Format in title: "三星（SAMSUNG）..." or "苹果（Apple）..."
-    if (title && brand) {
-      const enBrandMatch = title.match(/（([A-Z][A-Za-z0-9\s&]+)）/);
-      if (enBrandMatch) {
-        const brandEn = enBrandMatch[1].trim();
-        // Combine as: "三星（SAMSUNG）"
-        brand = `${brand}（${brandEn}）`;
+    // Only if cn_brand doesn't already contain English name in parentheses
+    if (title && brand && !brand.match(/[（(][A-Za-z]/)) {
+      // Format 1: "Apple/苹果 iPhone..." - Extract English before slash
+      const slashBrandMatch = title.match(/^([A-Z][A-Za-z0-9\s&]+)\/\s*[\u4e00-\u9fa5]+/);
+      if (slashBrandMatch) {
+        const brandEn = slashBrandMatch[1].trim();
+        // Combine as: "Apple/苹果"
+        brand = `${brandEn}/${brand}`;
+      } else {
+        // Format 2: "三星（SAMSUNG）..." - Extract English in parentheses
+        const parenBrandMatch = title.match(/（([A-Z][A-Za-z0-9\s&]+)）/);
+        if (parenBrandMatch) {
+          const brandEn = parenBrandMatch[1].trim();
+          // Combine as: "三星（SAMSUNG）"
+          brand = `${brand}（${brandEn}）`;
+        }
       }
     }
 
@@ -210,8 +223,8 @@ export class JDProductParser implements IProductInfoParser {
     desc: string,
     discountOwner: '平台' | '店舖'
   ): DiscountItem | null {
-    // Pattern: "满1件8.5折" or "满3件9折"
-    const quantityDiscountMatch = desc.match(/满(\d+)件([\d.]+)折/);
+    // Pattern: "满1享9折" or "满1件8.5折" or "满3件9折"
+    const quantityDiscountMatch = desc.match(/满(\d+)(?:件|享)([\d.]+)折/);
     if (quantityDiscountMatch) {
       const quantity = quantityDiscountMatch[1];
       const discountRate = parseFloat(quantityDiscountMatch[2]);
@@ -277,7 +290,8 @@ export class JDProductParser implements IProductInfoParser {
    */
   private extractPromotionDiscounts(
     json: JDProductInfo,
-    discountOwner: '平台' | '店舖'
+    discountOwner: '平台' | '店舖',
+    basePrice?: number
   ): DiscountItem[] {
     const discounts: DiscountItem[] = [];
 
@@ -285,16 +299,101 @@ export class JDProductParser implements IProductInfoParser {
       return discounts;
     }
 
+    // First pass: extract non-government discounts to calculate price after shop discounts
+    let priceAfterShopDiscounts = basePrice || 0;
+    const shopDiscounts: DiscountItem[] = [];
+
     for (const subtrahend of json.preference.preferencePopUp.expression.subtrahends) {
       if (subtrahend.preferenceDesc) {
+        // Skip government subsidies in first pass
+        if (subtrahend.topDesc === '补贴' || subtrahend.preferenceDesc.includes('政府补贴')) {
+          continue;
+        }
+
         const discount = this.parsePromotionPattern(subtrahend.preferenceDesc, discountOwner);
         if (discount) {
-          discounts.push(discount);
+          shopDiscounts.push(discount);
+
+          // Calculate price after this discount for proper sequencing
+          if (discount.discountType === '滿件折' && typeof discount.discountValue === 'string') {
+            const match = discount.discountValue.match(/满(\d+)件([\d.]+)折/);
+            if (match) {
+              const quantity = parseInt(match[1]);
+              const rate = parseFloat(match[2]);
+              // Apply discount if quantity requirement is met (assume 1 item)
+              if (quantity <= 1) {
+                priceAfterShopDiscounts *= (rate / 10);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    discounts.push(...shopDiscounts);
+
+    // Second pass: extract government subsidies with context
+    for (const subtrahend of json.preference.preferencePopUp.expression.subtrahends) {
+      if (subtrahend.preferenceDesc &&
+          (subtrahend.topDesc === '补贴' || subtrahend.preferenceDesc.includes('政府补贴'))) {
+        const govDiscount = this.parseGovernmentSubsidyFromSubtrahend(
+          subtrahend,
+          priceAfterShopDiscounts
+        );
+        if (govDiscount) {
+          discounts.push(govDiscount);
         }
       }
     }
 
     return discounts;
+  }
+
+  /**
+   * Parse government subsidy from subtrahend with intelligent type detection
+   */
+  private parseGovernmentSubsidyFromSubtrahend(
+    subtrahend: {
+      preferenceAmount?: string;
+      preferenceDesc?: string;
+      preferenceType?: string;
+      topDesc?: string;
+    },
+    priceAfterOtherDiscounts: number
+  ): DiscountItem | null {
+    if (!subtrahend.preferenceAmount) {
+      return null;
+    }
+
+    const subsidyAmount = parseFloat(subtrahend.preferenceAmount);
+
+    // Try to determine if government subsidy is a percentage discount or fixed amount
+    if (priceAfterOtherDiscounts > 0) {
+      const subsidyRatio = subsidyAmount / priceAfterOtherDiscounts;
+
+      // Common discount percentages: 5%, 10%, 15%, 20%, 25%, 30%, etc.
+      const commonPercentages = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45];
+      const isLikelyPercentage = commonPercentages.some(pct =>
+        Math.abs(subsidyRatio - pct) < 0.01
+      );
+
+      if (isLikelyPercentage && subsidyRatio < 0.5) {
+        // It's likely a percentage discount (e.g., 8.5折 = pay 85% = 15% off)
+        const discountRate = Math.round((1 - subsidyRatio) * 100) / 10;
+        return {
+          discountOwner: '政府',
+          discountType: '折扣',
+          discountValue: discountRate
+        };
+      }
+    }
+
+    // Default: treat as fixed amount reduction
+    return {
+      discountOwner: '政府',
+      discountType: '立減',
+      discountValue: subsidyAmount
+    };
   }
 
   /**
@@ -313,6 +412,30 @@ export class JDProductParser implements IProductInfoParser {
       return null;
     }
 
+    // First, try to extract from preferencePopUp.morePreference (newer format)
+    const limitPref = json.preference?.preferencePopUp?.morePreference?.find(
+      pref => pref.text === '限购' && pref.tag === 3
+    );
+
+    if (limitPref) {
+      // Extract from value like "购买至少1件时可享受单件价￥9499，超出数量以结算价为准"
+      const valueMatch = limitPref.value?.match(/购买至少(\d+)件时可享受单件价￥([\d.]+)/);
+      if (valueMatch) {
+        const limitNum = parseInt(valueMatch[1]);
+        const limitPrice = parseFloat(valueMatch[2]);
+
+        if (originalPrice && limitPrice < originalPrice) {
+          const discountAmount = parseFloat((originalPrice - limitPrice).toFixed(2));
+          return {
+            discountOwner,
+            discountType: '限購',
+            discountValue: `${limitNum}-${discountAmount}`
+          };
+        }
+      }
+    }
+
+    // Fallback: Try commonLimitInfo (older format)
     if (!json.commonLimitInfo?.limitText) {
       return null;
     }
@@ -360,17 +483,26 @@ export class JDProductParser implements IProductInfoParser {
     // Determine discount owner based on vender type
     const discountOwner = this.getDiscountOwner(json);
 
-    // 1. Check for government subsidy (政府补贴) - highest priority
-    const governmentSubsidy = this.extractGovernmentSubsidy(json);
-    if (governmentSubsidy) {
-      discountInfo.push(governmentSubsidy);
-    }
+    // Get base price from expression or use originalPrice
+    const basePrice = json.preference?.preferencePopUp?.expression?.basePrice
+      ? parseFloat(json.preference.preferencePopUp.expression.basePrice)
+      : originalPrice;
 
-    // 2. Extract promotion discounts from expression.subtrahends
-    const promotionDiscounts = this.extractPromotionDiscounts(json, discountOwner);
+    // 1. Extract all discounts from expression.subtrahends (includes both shop and gov discounts)
+    const promotionDiscounts = this.extractPromotionDiscounts(json, discountOwner, basePrice);
     discountInfo.push(...promotionDiscounts);
 
-    const hasGovernmentSubsidy = governmentSubsidy !== null;
+    // Check if government subsidy was already extracted from subtrahends
+    const hasGovernmentSubsidy = promotionDiscounts.some(d => d.discountOwner === '政府');
+
+    // 2. Fallback: Check for government subsidy in price.finalPrice if not in subtrahends
+    if (!hasGovernmentSubsidy) {
+      const governmentSubsidy = this.extractGovernmentSubsidy(json);
+      if (governmentSubsidy) {
+        discountInfo.push(governmentSubsidy);
+      }
+    }
+
     const hasPromotionDiscount = promotionDiscounts.length > 0;
 
     // 3. Check for limited purchase discount (限購)
