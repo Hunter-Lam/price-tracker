@@ -98,6 +98,7 @@ export class TaobaoProductParser implements IProductInfoParser {
 
   /**
    * Extract brand from parameters section
+   * Unified format: "中文/英文" or just brand name if only one part
    */
   private extractBrand(lines: string[]): string {
     // Look for "品牌" line followed by brand name
@@ -105,9 +106,26 @@ export class TaobaoProductParser implements IProductInfoParser {
       if (lines[i] === '品牌') {
         const brandLine = lines[i + 1];
         // Handle format like "Colgate/高露洁" or "PUKEM/布克之雪"
-        const parts = brandLine.split('/');
-        // Prefer Chinese name if available
-        return parts.length > 1 ? parts[1] : parts[0];
+        const parts = brandLine.split('/').map(p => p.trim());
+
+        if (parts.length >= 2) {
+          // Determine which is Chinese and which is English
+          const isChinese = (text: string) => /[\u4e00-\u9fa5]/.test(text);
+          const brandCn = parts.find(p => isChinese(p)) || '';
+          const brandEn = parts.find(p => !isChinese(p) && /^[A-Za-z]/.test(p)) || '';
+
+          // Return unified format: "中文/英文"
+          if (brandCn && brandEn) {
+            return `${brandCn}/${brandEn}`;
+          } else if (brandCn) {
+            return brandCn;
+          } else if (brandEn) {
+            return brandEn;
+          }
+        }
+
+        // Single part, return as is
+        return parts[0] || '';
       }
     }
 
@@ -194,29 +212,111 @@ export class TaobaoProductParser implements IProductInfoParser {
       warnings.push('Price not found');
     }
 
+    // If no originalPrice found, set it to the same as price (no discount)
+    if (price && !originalPrice) {
+      originalPrice = price;
+    }
+
     return { price, originalPrice };
   }
 
   /**
    * Extract specification/model from parameters
+   * Extracts ALL parameter fields from the parameters section
+   *
+   * Strategy:
+   * - Detect format automatically (KEY-VALUE for Taobao, VALUE-KEY for Tmall)
+   * - Extract all key-value pairs in the parameters section
+   * - Each pair consists of two consecutive lines
    */
   private extractSpecification(lines: string[]): string {
-    const specs: string[] = [];
+    const specs: Map<string, string> = new Map();
 
-    // Look for common spec fields
-    const specFields = ['型号', '规格', '颜色分类', '售卖规格'];
+    // Find "参数信息" section
+    let paramsStartIndex = -1;
+    let paramsEndIndex = lines.length;
 
-    for (let i = 0; i < lines.length - 1; i++) {
-      if (specFields.includes(lines[i])) {
-        const specValue = lines[i + 1];
-        if (specValue && specValue.length < 100) {
-          specs.push(specValue);
-          break; // Just take the first one found
-        }
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i] === '参数信息') {
+        paramsStartIndex = i;
+      } else if (paramsStartIndex >= 0 && lines[i].endsWith('信息') && lines[i] !== '参数信息') {
+        paramsEndIndex = i;
+        break;
       }
     }
 
-    return specs.join(', ');
+    if (paramsStartIndex === -1) {
+      return '';
+    }
+
+    // Filter out empty lines in parameters section
+    const paramLines: string[] = [];
+    for (let i = paramsStartIndex + 1; i < paramsEndIndex; i++) {
+      const line = lines[i];
+      if (line && line.trim()) {
+        paramLines.push(line.trim());
+      }
+    }
+
+    if (paramLines.length === 0) {
+      return '';
+    }
+
+    // Common parameter keys to help identify which line is the key
+    const commonKeys = [
+      '品牌', '产地', '型号', '规格', '颜色分类', '材质', '款式',
+      '大小', '货号', '适用年龄段', '功能', '包装', '包装规格',
+      '系列', '省份', '城市', '规格描述', '是否进口', '总净含量',
+      '生产许可证编号', '厂名', '厂址', '厂家联系方式', '配料表',
+      '保质期', '净含量', '成分', '特性', '用途', '特殊添加成分',
+      '适用对象', '流行元素', '风格', '元素年代', '套件种类',
+      '适用空间', '个数', '适用场景', '适用群体', '单件净含量',
+      '酒精度数', '香型', '包装方式', '售卖规格'
+    ];
+
+    // Extract key-value pairs by checking each pair individually
+    // This handles mixed formats (some VALUE-KEY, some KEY-VALUE in same section)
+    for (let i = 0; i < paramLines.length - 1; i += 2) {
+      const line1 = paramLines[i];
+      const line2 = paramLines[i + 1];
+
+      let key: string, value: string;
+
+      // Check if line1 is a known key
+      if (commonKeys.includes(line1)) {
+        // KEY-VALUE: line1 is key, line2 is value
+        key = line1;
+        value = line2;
+      } else if (commonKeys.includes(line2)) {
+        // VALUE-KEY: line2 is key, line1 is value
+        key = line2;
+        value = line1;
+      } else {
+        // Neither is a known key, skip this pair or guess
+        // Heuristic: shorter line is more likely to be the key
+        if (line1.length < line2.length) {
+          key = line1;
+          value = line2;
+        } else {
+          key = line2;
+          value = line1;
+        }
+      }
+
+      if (key && value) {
+        specs.set(key, value);
+      }
+    }
+
+    // Combine specs in formatted style: KEY: VALUE
+    const specParts: string[] = [];
+    for (const [mapKey, mapValue] of specs) {
+      // Map stores entries as: specs.set(key, value)
+      // So mapKey is the actual key, mapValue is the actual value
+      specParts.push(`${mapKey}: ${mapValue}`);
+    }
+
+    return specParts.join(', ');
   }
 
   /**
