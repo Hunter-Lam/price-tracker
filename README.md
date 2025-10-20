@@ -96,7 +96,9 @@ specification template
 specification parse Line Break
 specification parse default order 
 don't restart each submit time
-
+remember column settings
+specification expendable
+chart filter by date
 
 
 show download location
