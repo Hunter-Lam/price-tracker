@@ -82,16 +82,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         onSourceTypeChange={onSourceTypeChange}
       />
 
+      <Form.Item
+        name="title"
+        label={t('form.productTitle')}
+        rules={[{ required: true, message: t('form.productTitleRequired') }]}
+      >
+        <Input placeholder={t('form.productTitlePlaceholder')} />
+      </Form.Item>
+
       <Row gutter={16}>
-        <Col xs={24} sm={12}>
-          <Form.Item
-            name="title"
-            label={t('form.productTitle')}
-            rules={[{ required: true, message: t('form.productTitleRequired') }]}
-          >
-            <Input placeholder={t('form.productTitlePlaceholder')} />
-          </Form.Item>
-        </Col>
         <Col xs={24} sm={12}>
           <Form.Item
             name="brand"
@@ -101,9 +100,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             <Input placeholder={t('form.brandPlaceholder')} />
           </Form.Item>
         </Col>
-      </Row>
-
-      <Row gutter={16}>
         <Col xs={24} sm={12}>
           <Form.Item
             name="type"
@@ -117,14 +113,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 value: CATEGORIES[index]
               }))}
             />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12}>
-          <Form.Item
-            name="specification"
-            label={t('form.specification')}
-          >
-            <Input placeholder={t('form.specificationPlaceholder')} />
           </Form.Item>
         </Col>
       </Row>
