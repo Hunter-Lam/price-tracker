@@ -89,6 +89,7 @@ excel import
 parse product info button $1
 jd info formats and calibration $28.87
 JD product parser extract brand name $9.26
+larger window $0.1556
 
 
 show download location
