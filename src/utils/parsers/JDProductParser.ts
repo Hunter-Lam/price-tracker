@@ -21,6 +21,7 @@ interface JDProductInfo {
     product_id?: string;     // Product ID
     size?: string;           // Specification
     vender_id?: string;      // Vendor ID (if exists, it's a store)
+    sale_attributes?: string; // JSON string of sale attributes
   };
   preference?: {
     preferencePopUp?: {
@@ -131,26 +132,48 @@ export class JDProductParser implements IProductInfoParser {
     }
 
     // Extract brand (Chinese and English)
-    let brand = json.wareInfoReadMap?.cn_brand || '';
+    // Unified format: "中文名/英文名" or just "品牌名" if missing parts
+    let brand = '';
+    let brandCn = json.wareInfoReadMap?.cn_brand || '';
+    let brandEn = '';
 
-    // Try to extract English brand from product name and combine with Chinese brand
-    // Only if cn_brand doesn't already contain English name in parentheses
-    if (title && brand && !brand.match(/[（(][A-Za-z]/)) {
-      // Format 1: "Apple/苹果 iPhone..." - Extract English before slash
-      const slashBrandMatch = title.match(/^([A-Z][A-Za-z0-9\s&]+)\/\s*[\u4e00-\u9fa5]+/);
-      if (slashBrandMatch) {
-        const brandEn = slashBrandMatch[1].trim();
-        // Combine as: "Apple/苹果"
-        brand = `${brandEn}/${brand}`;
+    if (title && brandCn) {
+      // Case 1: cn_brand already contains both (e.g., "九阳（Joyoung）" or "Apple/苹果")
+      // Extract Chinese and English parts
+      const cnBrandSlashMatch = brandCn.match(/^([A-Za-z][A-Za-z0-9\s&]+)\/\s*([\u4e00-\u9fa5]+)/);
+      const cnBrandParenMatch = brandCn.match(/^([\u4e00-\u9fa5]+)[（(]([A-Za-z][A-Za-z0-9\s&]+)[）)]/);
+
+      if (cnBrandSlashMatch) {
+        // cn_brand is "English/中文" format
+        brandEn = cnBrandSlashMatch[1].trim();
+        brandCn = cnBrandSlashMatch[2].trim();
+      } else if (cnBrandParenMatch) {
+        // cn_brand is "中文（English）" format
+        brandCn = cnBrandParenMatch[1].trim();
+        brandEn = cnBrandParenMatch[2].trim();
       } else {
-        // Format 2: "三星（SAMSUNG）..." - Extract English in parentheses
-        const parenBrandMatch = title.match(/（([A-Z][A-Za-z0-9\s&]+)）/);
-        if (parenBrandMatch) {
-          const brandEn = parenBrandMatch[1].trim();
-          // Combine as: "三星（SAMSUNG）"
-          brand = `${brand}（${brandEn}）`;
+        // Case 2: cn_brand is pure Chinese, try to extract English from title
+        // Format 1: "Apple/苹果 iPhone..."
+        const titleSlashMatch = title.match(/^([A-Z][A-Za-z0-9\s&]+)\/\s*[\u4e00-\u9fa5]+/);
+        if (titleSlashMatch) {
+          brandEn = titleSlashMatch[1].trim();
+        } else {
+          // Format 2: "三星（SAMSUNG）..."
+          const titleParenMatch = title.match(/^[\u4e00-\u9fa5]+[（(]([A-Z][A-Za-z0-9\s&]+)[）)]/);
+          if (titleParenMatch) {
+            brandEn = titleParenMatch[1].trim();
+          }
         }
       }
+    }
+
+    // Combine in unified format: "中文/English"
+    if (brandCn && brandEn) {
+      brand = `${brandCn}/${brandEn}`;
+    } else if (brandCn) {
+      brand = brandCn;
+    } else if (brandEn) {
+      brand = brandEn;
     }
 
     if (!brand) {
@@ -171,8 +194,29 @@ export class JDProductParser implements IProductInfoParser {
       : (json.price?.regularPrice || json.price?.op || '');
     const originalPrice = originalPriceStr ? parseFloat(originalPriceStr) : undefined;
 
-    // Extract specification
-    const specification = json.wareInfoReadMap?.size || '';
+    // Extract specification from sale_attributes or fallback to size
+    let specification = '';
+    const saleAttributesStr = json.wareInfoReadMap?.sale_attributes;
+
+    if (saleAttributesStr) {
+      try {
+        const saleAttributes = JSON.parse(saleAttributesStr);
+        // sale_attributes format: [{"dim":1,"saleName":"外观","saleValue":"原色钛金属","sequenceNo":2},...]
+        // Extract and combine all saleValue fields
+        const specs = saleAttributes
+          .sort((a: any, b: any) => (a.sequenceNo || 0) - (b.sequenceNo || 0))
+          .map((attr: any) => attr.saleValue)
+          .filter((value: string) => value && value.trim());
+
+        specification = specs.join(' ');
+      } catch (e) {
+        // If parsing fails, fallback to size field
+        specification = json.wareInfoReadMap?.size || '';
+      }
+    } else {
+      // Fallback to size field
+      specification = json.wareInfoReadMap?.size || '';
+    }
 
     // Extract product ID to construct URL
     const productId = json.wareInfoReadMap?.product_id || '';
