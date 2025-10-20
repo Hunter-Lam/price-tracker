@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Input, Space, Typography, Card, App, Divider, Alert } from "antd";
+import { Button, Input, Space, Typography, Card, App, Divider, Alert, Modal } from "antd";
 import { FileTextOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { useTranslation } from 'react-i18next';
 import type { FormInstance } from "antd";
@@ -372,31 +372,46 @@ class DiscountParser {
     return merged;
   }
 
-  static parseGovernmentSubsidy(lines: string[], finalPrice: number, originalPrice: number): DiscountItem[] {
+  static parseGovernmentSubsidy(lines: string[], priceAfterOtherDiscounts?: number): DiscountItem[] {
     const subsidies: DiscountItem[] = [];
-    
+
     lines.forEach(line => {
       if (line.includes("政府补贴") || (line.includes("补贴") && !line.includes("百亿"))) {
         const match = line.match(/补贴¥?([\d.]+)/);
         if (match) {
           const subsidyAmount = parseFloat(match[1]);
-          
-          if (originalPrice > 0 && finalPrice > 0) {
-            // Calculate the discount percentage correctly: (finalPrice / originalPrice) * 10 = X折
-            // For example: 125.1 / 139 = 0.9, so it's 9折 (90% of original price, 10% off)
-            const discountPercent = Math.round((finalPrice / originalPrice) * 100) / 10;
-            subsidies.push({
-              discountOwner: "政府",
-              discountType: "折扣",
-              discountValue: discountPercent
-            });
-          } else {
-            subsidies.push({
-              discountOwner: "政府",
-              discountType: "立減",
-              discountValue: subsidyAmount
-            });
+
+          // Try to determine if government subsidy is a percentage discount or fixed amount
+          // by checking if the subsidy amount represents a clean percentage (like 8.5折)
+          if (priceAfterOtherDiscounts && priceAfterOtherDiscounts > 0) {
+            const subsidyRatio = subsidyAmount / priceAfterOtherDiscounts;
+
+            // Common discount percentages: 5%, 10%, 15%, 20%, 25%, 30%, etc.
+            // Check if subsidy ratio is close to these common percentages
+            const commonPercentages = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45];
+            const isLikelyPercentage = commonPercentages.some(pct =>
+              Math.abs(subsidyRatio - pct) < 0.01
+            );
+
+            if (isLikelyPercentage && subsidyRatio < 0.5) {
+              // It's likely a percentage discount (e.g., 8.5折 = pay 85% = 15% off)
+              const discountRate = Math.round((1 - subsidyRatio) * 100) / 10;
+              subsidies.push({
+                discountOwner: "政府",
+                discountType: "折扣",
+                discountValue: discountRate
+              });
+              return;
+            }
           }
+
+          // Default: treat as fixed amount reduction
+          // Government subsidies are applied AFTER percentage discounts
+          subsidies.push({
+            discountOwner: "政府",
+            discountType: "立減",
+            discountValue: subsidyAmount
+          });
         }
       }
     });
@@ -589,9 +604,19 @@ class MainParserEngine {
     const priceLines = PriceParser.extractDirectPrices(lines);
     const { finalPrice, originalPrice } = PriceParser.assignPrices(lines, priceLines);
 
-    // Parse discounts
+    // Parse discounts (excluding government subsidies first)
     const discounts = DiscountParser.parseDiscounts(lines);
-    const govSubsidies = DiscountParser.parseGovernmentSubsidy(lines, finalPrice, originalPrice);
+
+    // Calculate price after non-government discounts to help identify government subsidy type
+    let priceAfterOtherDiscounts = originalPrice;
+    discounts.forEach(discount => {
+      if (discount.discountType === "折扣" && typeof discount.discountValue === 'number') {
+        priceAfterOtherDiscounts *= (discount.discountValue / 10);
+      }
+    });
+
+    // Now parse government subsidies with context
+    const govSubsidies = DiscountParser.parseGovernmentSubsidy(lines, priceAfterOtherDiscounts);
     discounts.push(...govSubsidies);
 
     // Parse metadata
@@ -702,6 +727,7 @@ const isCalculationAccurate = (result: ParsedDiscount): boolean => {
 const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsedDiscounts }) => {
   const { message } = App.useApp();
   const { t } = useTranslation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [parsedResults, setParsedResults] = useState<ParsedDiscount[]>([]);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
@@ -776,26 +802,45 @@ const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsed
 
   const applyResult = (result: ParsedDiscount) => {
     const fieldsToUpdate: any = {};
-    
+
     if (result.finalPrice > 0) {
       fieldsToUpdate.price = result.finalPrice;
     }
-    
+
     if (result.originalPrice > 0) {
       fieldsToUpdate.originalPrice = result.originalPrice;
     }
-    
+
     if (result.discounts.length > 0) {
       fieldsToUpdate.discount = result.discounts;
       onParsedDiscounts?.(result.discounts);
     }
-    
+
     form.setFieldsValue(fieldsToUpdate);
     message.success(t('discountParser.applied'));
+    setIsModalOpen(false);
   };
 
   return (
-    <Card title={t('discountParser.title')} size="small" style={{ marginBottom: 16 }}>
+    <>
+      <Button
+        type="link"
+        size="small"
+        icon={<FileTextOutlined />}
+        onClick={() => setIsModalOpen(true)}
+        style={{ padding: '0 4px', height: 'auto' }}
+      >
+        {t('discountParser.parseButton')}
+      </Button>
+
+      <Modal
+        title={t('discountParser.title')}
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        footer={null}
+        width={800}
+        destroyOnClose
+      >
       <Space direction="vertical" style={{ width: '100%' }}>
         <Input.TextArea
           value={inputText}
@@ -920,7 +965,8 @@ const DiscountParserComponent: React.FC<DiscountParserProps> = ({ form, onParsed
           </>
         )}
       </Space>
-    </Card>
+      </Modal>
+    </>
   );
 };
 

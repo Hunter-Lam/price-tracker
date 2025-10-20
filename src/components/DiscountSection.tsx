@@ -5,6 +5,7 @@ import { MinusCircleOutlined, PlusOutlined, ArrowUpOutlined, ArrowDownOutlined }
 import { useTranslation } from 'react-i18next';
 import { DISCOUNT_ORGANIZERS, DISCOUNT_ORGANIZER_KEYS, DISCOUNT_METHODS, DISCOUNT_METHOD_KEYS } from "../constants";
 import DiscountInput from "./DiscountInput";
+import DiscountParser from "./DiscountParser";
 
 interface DiscountSectionProps {
   form: FormInstance;
@@ -15,7 +16,15 @@ const DiscountSection: React.FC<DiscountSectionProps> = ({ form }) => {
   const { t } = useTranslation();
 
   return (
-    <Form.Item name="discount" label={t('discount.title')}>
+    <Form.Item
+      name="discount"
+      label={
+        <Space>
+          {t('discount.title')}
+          <DiscountParser form={form} />
+        </Space>
+      }
+    >
       <Form.List name="discount">
         {(fields, { add, remove, move }) => (
           <Space direction="vertical" style={{ width: '100%' }}>

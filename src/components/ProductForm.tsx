@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { useTranslation } from 'react-i18next';
 import type { FormData } from "../types";
 import { CATEGORIES, CATEGORY_KEYS } from "../constants";
-import { SourceInput, DiscountSection, DiscountParser } from "./";
+import { SourceInput, DiscountSection } from "./";
 
 interface ProductFormProps {
   form: any;
@@ -159,8 +159,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           </Form.Item>
         </Col>
       </Row>
-
-      <DiscountParser form={form} />
 
       <DiscountSection form={form} />
 
