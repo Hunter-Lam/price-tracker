@@ -91,6 +91,13 @@ jd info formats and calibration $28.87
 JD product parser extract brand name $9.26
 larger window $0.1556
 
+unit price
+specification template
+specification parse Line Break
+specification parse default order 
+don't restart each submit time
+
+
 
 show download location
 select downlaod location
@@ -232,3 +239,28 @@ iPhone16Pro
 补贴
 ¥296.87
 政府补贴京东支付减¥296.87
+
+
+手機摸
+秒杀价
+¥
+19.63
+优惠前
+¥
+24.8
+·
+已售 2万+
+直降5.17元
+
+酸梅湯
+券后
+¥
+33.1
+优惠前
+¥
+39
+已售 1万+
+
+11月14日 24点
+结束
+官方立减15%省5.9元
