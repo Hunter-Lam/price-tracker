@@ -64,6 +64,13 @@ const DISCOUNT_PATTERNS: DiscountPattern[] = [
     priority: 3
   },
   {
+    pattern: /满(\d+)件减(\d+)/,
+    type: "滿減",
+    owner: "店舖",
+    getValue: (match) => `满${match[1]}件减${match[2]}`,
+    priority: 3.5
+  },
+  {
     pattern: /每满(\d+)件减(\d+)/,
     type: "每滿減",
     owner: "店舖",
@@ -133,13 +140,8 @@ const DISCOUNT_PATTERNS: DiscountPattern[] = [
     getValue: (match) => parseInt(match[1]),
     priority: 10
   },
-  {
-    pattern: /购买立减[¥\s]*([\d.]+)/,
-    type: "立減",
-    owner: "平台",
-    getValue: (match) => parseFloat(match[1]),
-    priority: 11
-  },
+  // NOTE: "购买立减" pattern removed - it's typically a summary/total, not an individual discount
+  // This prevents double-counting when individual discounts (优惠券, 补贴) are listed separately
   {
     pattern: /优惠券¥?([\d.]+)/,
     type: "立減",
@@ -147,13 +149,8 @@ const DISCOUNT_PATTERNS: DiscountPattern[] = [
     getValue: (match) => parseFloat(match[1]),
     priority: 11.2
   },
-  {
-    pattern: /促销¥?([\d.]+)/,
-    type: "立減",
-    owner: "店舖",
-    getValue: (match) => parseFloat(match[1]),
-    priority: 11.3
-  },
+  // NOTE: "促销" pattern removed - it's typically a label with details on the next line
+  // The actual discount (e.g., "满1件减2") is captured separately
   {
     pattern: /全场立减[¥\s]*([\d.]+)/,
     type: "立減",
@@ -192,21 +189,39 @@ class PriceParser {
 
   static extractDirectPrices(lines: string[]): PriceLine[] {
     const priceLines: PriceLine[] = [];
-    
+
     lines.forEach((line, index) => {
       if (!line.startsWith("¥")) return;
 
-      // Skip lines that are part of discount descriptions
+      // Skip lines that are part of discount descriptions UNLESS they come immediately after specific keywords
       const prevLine = lines[index - 1];
-      
-      // Skip if this appears to be part of a discount description
-      if (prevLine && (
-        prevLine.includes("购买立减") || 
-        prevLine.includes("立减") || 
+
+      // Only skip if it's a discount amount that's NOT a final/original price indicator
+      const isDiscountKeyword = prevLine && (
+        prevLine.includes("立减") ||
         prevLine.includes("优惠券") ||
         prevLine.includes("减") ||
         prevLine.includes("补贴")
-      )) {
+      );
+
+      const isPriceKeyword = prevLine && (
+        prevLine.includes("政府补贴价") ||
+        prevLine.includes("京东价") ||
+        prevLine.includes("券后") ||
+        prevLine.includes("券後") ||
+        prevLine.includes("到手价") ||
+        prevLine.includes("到手價") ||
+        prevLine.includes("原价") ||
+        prevLine.includes("原價") ||
+        prevLine.includes("市场价") ||
+        prevLine.includes("市場價") ||
+        prevLine.includes("现价") ||
+        prevLine.includes("現價") ||
+        prevLine.includes("秒杀价")
+      );
+
+      // Skip if it's clearly a discount amount (not a final/original price)
+      if (isDiscountKeyword && !isPriceKeyword) {
         return;
       }
 
@@ -224,6 +239,10 @@ class PriceParser {
       if (line === "¥" && lines[index + 1]) {
         const nextLinePrice = parseFloat(lines[index + 1]);
         if (!isNaN(nextLinePrice) && nextLinePrice > 0) {
+          // Same check: skip if it's a discount amount
+          if (isDiscountKeyword && !isPriceKeyword) {
+            return;
+          }
           priceLines.push({ price: nextLinePrice, index: index + 1 });
         }
       }
@@ -282,18 +301,70 @@ class DiscountParser {
     lines.forEach((line, index) => {
       if (processedLines.has(index)) return;
 
+      // Special handling for multi-line discount patterns
+      // Check if current line is a discount keyword followed by amount on next line(s)
+
+      // NOTE: "购买立减" is typically a summary/total line, not an individual discount
+      // Skip it to avoid double-counting
+      if (line === "购买立减" || line.includes("购买立减")) {
+        // Mark these lines as processed but don't add as a discount
+        processedLines.add(index);
+        this.markAmountLinesAsProcessed(lines, index, processedLines);
+        return;
+      }
+
+      // NOTE: "促销" alone is typically a label, with the actual discount on the next line
+      // Skip the label line to avoid double-counting
+      if (line === "促销") {
+        // Just mark this line as processed, but let the next lines be parsed for the actual discount
+        processedLines.add(index);
+        // Only mark the amount line (¥X) as processed, NOT the detail line (满X件减Y)
+        this.markAmountLinesOnly(lines, index, processedLines);
+        return;
+      }
+
+      if (line === "优惠券" || line.startsWith("优惠券")) {
+        const amount = this.extractAmountFromNextLines(lines, index);
+        if (amount > 0) {
+          discounts.push({
+            discountOwner: "平台",
+            discountType: "立減",
+            discountValue: amount
+          });
+          processedLines.add(index);
+          // Mark the next lines containing the amount as processed to avoid duplication
+          this.markAmountLinesAsProcessed(lines, index, processedLines);
+          return;
+        }
+      }
+
+      if (line === "补贴" && !line.includes("政府") && !line.includes("百亿")) {
+        const amount = this.extractAmountFromNextLines(lines, index);
+        if (amount > 0) {
+          discounts.push({
+            discountOwner: "政府",
+            discountType: "立減",
+            discountValue: amount
+          });
+          processedLines.add(index);
+          // Mark the next lines containing the amount as processed to avoid duplication
+          this.markAmountLinesAsProcessed(lines, index, processedLines);
+          return;
+        }
+      }
+
       for (const pattern of sortedPatterns) {
         const match = line.match(pattern.pattern);
         if (match && (!pattern.condition || pattern.condition(line))) {
           const owner = typeof pattern.owner === 'function' ? pattern.owner(line) : pattern.owner;
           const value = pattern.getValue(match);
-          
+
           discounts.push({
             discountOwner: owner as any,
             discountType: pattern.type as any,
             discountValue: value
           });
-          
+
           processedLines.add(index);
           break;
         }
@@ -301,6 +372,76 @@ class DiscountParser {
     });
 
     return this.mergeDuplicateDiscounts(discounts);
+  }
+
+  static markAmountLinesAsProcessed(lines: string[], startIndex: number, processedLines: Set<number>): void {
+    // Mark the lines containing the amount and any detail lines as processed
+    for (let i = startIndex + 1; i < Math.min(startIndex + 5, lines.length); i++) {
+      const line = lines[i];
+
+      // Mark price lines as processed
+      if (line.startsWith("¥") || line.match(/^[\d.]+$/)) {
+        processedLines.add(i);
+      }
+
+      // Also mark detail lines that contain the same discount information
+      // e.g., "满1享9折减219.9" after "优惠券 ¥219.9"
+      if (line.includes("满") && line.includes("减")) {
+        processedLines.add(i);
+      }
+
+      // Stop if we hit a separator or new section
+      if (line === "=" || line === "-" || line.includes("价")) {
+        break;
+      }
+    }
+  }
+
+  static markAmountLinesOnly(lines: string[], startIndex: number, processedLines: Set<number>): void {
+    // Mark only the price/amount lines as processed, NOT detail lines
+    for (let i = startIndex + 1; i < Math.min(startIndex + 5, lines.length); i++) {
+      const line = lines[i];
+
+      // Mark price lines as processed
+      if (line.startsWith("¥") || line.match(/^[\d.]+$/)) {
+        processedLines.add(i);
+      }
+
+      // Stop if we hit a separator, new section, or detail line
+      if (line === "=" || line === "-" || line.includes("价") ||
+          (line.includes("满") && line.includes("减"))) {
+        break;
+      }
+    }
+  }
+
+  static extractAmountFromNextLines(lines: string[], startIndex: number): number {
+    // Look at the next few lines for a price format
+    for (let i = startIndex + 1; i < Math.min(startIndex + 4, lines.length); i++) {
+      const line = lines[i];
+
+      // Check for "¥123.45" format
+      const sameLineMatch = line.match(/^¥([\d.]+)$/);
+      if (sameLineMatch) {
+        return parseFloat(sameLineMatch[1]);
+      }
+
+      // Check for standalone number that could be a price
+      const numberMatch = line.match(/^([\d.]+)$/);
+      if (numberMatch && parseFloat(numberMatch[1]) > 0) {
+        // Verify previous line was "¥" symbol
+        if (lines[i - 1] === "¥") {
+          return parseFloat(numberMatch[1]);
+        }
+      }
+
+      // Stop if we hit a non-price related line
+      if (line !== "¥" && !line.match(/^[\d.]+$/) && line !== "" && !line.startsWith("¥")) {
+        break;
+      }
+    }
+
+    return 0;
   }
 
   static mergeDuplicateDiscounts(discounts: DiscountItem[]): DiscountItem[] {
@@ -316,7 +457,8 @@ class DiscountParser {
         key = `固定減免-${discount.discountValue}`;
       } else if (discount.discountType === "滿減" && typeof discount.discountValue === 'string') {
         // For threshold discounts, extract the reduction amount
-        const match = discount.discountValue.match(/满(\d+)减(\d+)/);
+        // Handle both "满X减Y" and "满X件减Y" patterns
+        const match = discount.discountValue.match(/满(\d+)(?:件)?减(\d+)/);
         if (match) {
           const reduction = parseInt(match[2]);
           // Use reduction amount as key to match with fixed amount discounts of same amount
@@ -344,11 +486,11 @@ class DiscountParser {
             return existing.discountValue === discount.discountValue;
           }
           if (existing.discountType === "立減" && discount.discountType === "滿減" && typeof discount.discountValue === 'string') {
-            const match = discount.discountValue.match(/满(\d+)减(\d+)/);
+            const match = discount.discountValue.match(/满(\d+)(?:件)?减(\d+)/);
             return existing.discountValue === parseInt(match?.[2] || '0');
           }
           if (existing.discountType === "首購" && discount.discountType === "滿減" && typeof discount.discountValue === 'string') {
-            const match = discount.discountValue.match(/满(\d+)减(\d+)/);
+            const match = discount.discountValue.match(/满(\d+)(?:件)?减(\d+)/);
             return existing.discountValue === parseInt(match?.[2] || '0');
           }
           return false;
@@ -469,10 +611,16 @@ class CalculationEngine {
         }
       } else if (discount.discountType === "滿減") {
         const value = discount.discountValue as string;
-        const match = value.match(/满(\d+)减(\d+)/);
-        if (match && result.originalPrice >= parseInt(match[1])) {
+        // Handle both "满X减Y" and "满X件减Y" patterns
+        const match = value.match(/满(\d+)(?:件)?减(\d+)/);
+        if (match) {
+          const threshold = parseInt(match[1]);
           const reduction = parseInt(match[2]);
-          fixedDiscounts.push(reduction);
+          // For "满X件减Y", threshold is quantity (if <=1, apply discount)
+          // For "满X减Y", threshold is price amount
+          if (threshold <= 1 || result.originalPrice >= threshold) {
+            fixedDiscounts.push(reduction);
+          }
         }
       } else if (discount.discountType === "滿件折") {
         const value = discount.discountValue as string;
@@ -667,10 +815,16 @@ const isCalculationAccurate = (result: ParsedDiscount): boolean => {
       }
     } else if (discount.discountType === "滿減") {
       const value = discount.discountValue as string;
-      const match = value.match(/满(\d+)减(\d+)/);
-      if (match && result.originalPrice >= parseInt(match[1])) {
+      // Handle both "满X减Y" and "满X件减Y" patterns
+      const match = value.match(/满(\d+)(?:件)?减(\d+)/);
+      if (match) {
+        const threshold = parseInt(match[1]);
         const reduction = parseInt(match[2]);
-        fixedDiscounts.push(reduction);
+        // For "满X件减Y", threshold is quantity (if <=1, apply discount)
+        // For "满X减Y", threshold is price amount
+        if (threshold <= 1 || result.originalPrice >= threshold) {
+          fixedDiscounts.push(reduction);
+        }
       }
     } else if (discount.discountType === "滿件折") {
       const value = discount.discountValue as string;
