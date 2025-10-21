@@ -101,11 +101,31 @@ export class TaobaoProductParser implements IProductInfoParser {
    * Unified format: "中文/英文" or just brand name if only one part
    */
   private extractBrand(lines: string[]): string {
-    // Look for "品牌" line followed by brand name
-    for (let i = 0; i < lines.length - 1; i++) {
+    // Look for "品牌" line, then check both before and after for brand name
+    for (let i = 0; i < lines.length; i++) {
       if (lines[i] === '品牌') {
-        const brandLine = lines[i + 1];
-        // Handle format like "Colgate/高露洁" or "PUKEM/布克之雪"
+        // Try VALUE-KEY format first (Tmall): brand is on previous line
+        let brandLine = '';
+        if (i > 0) {
+          brandLine = lines[i - 1];
+        }
+
+        // If previous line looks like a valid brand, use it
+        // Otherwise, try KEY-VALUE format (Taobao): brand is on next line
+        const commonKeys = ['品牌', '产地', '型号', '规格', '颜色分类', '材质', '款式', '货号', '大小'];
+        if (!brandLine || commonKeys.includes(brandLine)) {
+          // Previous line is not a valid brand (it's empty or another key)
+          // Try next line (KEY-VALUE format)
+          if (i < lines.length - 1) {
+            brandLine = lines[i + 1];
+          }
+        }
+
+        if (!brandLine) {
+          continue;
+        }
+
+        // Handle format like "Colgate/高露洁" or "SANXINGDUI MUSEUM/三星堆博物馆"
         const parts = brandLine.split('/').map(p => p.trim());
 
         if (parts.length >= 2) {
@@ -148,6 +168,9 @@ export class TaobaoProductParser implements IProductInfoParser {
 
     console.log('Taobao parser - lines:', lines);
 
+    // Track which lines we've already processed to avoid double-processing
+    const processedIndices = new Set<number>();
+
     // Look for "券后" or just "¥" for final price
     for (let i = 0; i < lines.length - 1; i++) {
       const currentLine = lines[i];
@@ -161,6 +184,7 @@ export class TaobaoProductParser implements IProductInfoParser {
           if (!isNaN(priceValue) && priceValue > 0) {
             price = priceValue;
             console.log('Found 券后 price:', priceValue);
+            processedIndices.add(i + 1); // Mark the ¥ line as processed
           }
         } else {
           // Try to parse price from same line or next line
@@ -183,6 +207,7 @@ export class TaobaoProductParser implements IProductInfoParser {
           if (!isNaN(priceValue) && priceValue > 0) {
             originalPrice = priceValue;
             console.log('Found original price (优惠前/新品促销):', priceValue);
+            processedIndices.add(i + 1); // Mark the ¥ line as processed
           }
         } else {
           const priceMatch = (currentLine + ' ' + nextLine).match(/¥?\s*(\d+\.?\d*)/);
@@ -196,12 +221,19 @@ export class TaobaoProductParser implements IProductInfoParser {
         }
       }
 
-      // If just ¥ on a line, next line is price
-      if (currentLine === '¥' && !price) {
+      // If just ¥ on a line, next line is a price (skip if already processed)
+      if (currentLine === '¥' && !processedIndices.has(i)) {
         const priceValue = parseFloat(nextLine);
         if (!isNaN(priceValue) && priceValue > 0) {
-          price = priceValue;
-          console.log('Found price after ¥:', priceValue);
+          // If we already have a price (e.g., 券后 price), this ¥ is the original price
+          if (price && !originalPrice) {
+            originalPrice = priceValue;
+            console.log('Found original price after second ¥:', priceValue);
+          } else if (!price) {
+            // First ¥ found, use as price
+            price = priceValue;
+            console.log('Found price after ¥:', priceValue);
+          }
         }
       }
     }
@@ -264,47 +296,116 @@ export class TaobaoProductParser implements IProductInfoParser {
 
     // Common parameter keys to help identify which line is the key
     const commonKeys = [
-      '品牌', '产地', '型号', '规格', '颜色分类', '材质', '款式',
-      '大小', '货号', '适用年龄段', '功能', '包装', '包装规格',
+      '品牌', '产地', '型号', '规格', '颜色分类', '材质', '款式', '货号',
+      '大小', '适用年龄段', '功能', '包装', '包装规格',
       '系列', '省份', '城市', '规格描述', '是否进口', '总净含量',
       '生产许可证编号', '厂名', '厂址', '厂家联系方式', '配料表',
       '保质期', '净含量', '成分', '特性', '用途', '特殊添加成分',
       '适用对象', '流行元素', '风格', '元素年代', '套件种类',
       '适用空间', '个数', '适用场景', '适用群体', '单件净含量',
-      '酒精度数', '香型', '包装方式', '售卖规格'
+      '酒精度数', '香型', '包装方式', '售卖规格', '生产企业',
+      '贴膜特点', '贴膜工艺', '适用手机型号', '适用品牌',
+      '适用机型', '屏幕尺寸', '颜色', '容量', '版本', '套餐',
+      '尺码', '重量', '产品名称', '适用性别', '适用季节'
     ];
 
-    // Extract key-value pairs by checking each pair individually
-    // This handles mixed formats (some VALUE-KEY, some KEY-VALUE in same section)
-    for (let i = 0; i < paramLines.length - 1; i += 2) {
-      const line1 = paramLines[i];
-      const line2 = paramLines[i + 1];
+    // Detect format change: VALUE-KEY (Tmall) → KEY-VALUE (Taobao)
+    // Strategy 1: Find where the format switches by looking for consecutive known keys
+    // The format changes at the SECOND key of two consecutive keys
+    let formatChangeIndex = -1;
+    for (let j = 0; j < paramLines.length - 1; j++) {
+      // If current line is a known key AND next line is also a known key,
+      // this indicates the end of VALUE-KEY format and start of KEY-VALUE format
+      // The format change happens at the SECOND key (j + 1)
+      if (commonKeys.includes(paramLines[j]) && commonKeys.includes(paramLines[j + 1])) {
+        formatChangeIndex = j + 1;
+        break;
+      }
+    }
 
-      let key: string, value: string;
+    // Strategy 2: If no consecutive keys found, check if the entire section is VALUE-KEY format
+    // Count how many pairs have the pattern: non-key followed by key
+    if (formatChangeIndex === -1) {
+      let valueKeyCount = 0;
+      let keyValueCount = 0;
 
-      // Check if line1 is a known key
-      if (commonKeys.includes(line1)) {
-        // KEY-VALUE: line1 is key, line2 is value
-        key = line1;
-        value = line2;
-      } else if (commonKeys.includes(line2)) {
-        // VALUE-KEY: line2 is key, line1 is value
-        key = line2;
-        value = line1;
-      } else {
-        // Neither is a known key, skip this pair or guess
-        // Heuristic: shorter line is more likely to be the key
-        if (line1.length < line2.length) {
-          key = line1;
-          value = line2;
-        } else {
-          key = line2;
-          value = line1;
+      for (let j = 0; j < paramLines.length - 1; j += 2) {
+        const isFirstKey = commonKeys.includes(paramLines[j]);
+        const isSecondKey = j + 1 < paramLines.length && commonKeys.includes(paramLines[j + 1]);
+
+        if (!isFirstKey && isSecondKey) {
+          valueKeyCount++;
+        } else if (isFirstKey && !isSecondKey) {
+          keyValueCount++;
         }
       }
 
-      if (key && value) {
-        specs.set(key, value);
+      // If VALUE-KEY pairs dominate, treat entire section as VALUE-KEY
+      // Otherwise, treat entire section as KEY-VALUE
+      if (valueKeyCount > keyValueCount) {
+        formatChangeIndex = paramLines.length; // All VALUE-KEY, no format change
+      } else {
+        formatChangeIndex = 0; // All KEY-VALUE, format change at start
+      }
+    }
+
+    // Parse VALUE-KEY section (Tmall style)
+    let i = 0;
+    if (formatChangeIndex > 0) {
+      while (i < formatChangeIndex) {
+        if (i + 1 < paramLines.length && commonKeys.includes(paramLines[i + 1])) {
+          // VALUE-KEY format
+          specs.set(paramLines[i + 1], paramLines[i]);
+          i += 2;
+        } else {
+          // Orphaned line or unknown pattern, skip
+          i += 1;
+        }
+      }
+    }
+
+    // Parse KEY-VALUE section (Taobao style)
+    const startIndex = formatChangeIndex > 0 ? formatChangeIndex : 0;
+    i = startIndex;
+    while (i < paramLines.length) {
+      const currentLine = paramLines[i];
+
+      if (commonKeys.includes(currentLine)) {
+        // This is a KEY, next line should be VALUE
+        if (i + 1 < paramLines.length && !commonKeys.includes(paramLines[i + 1])) {
+          specs.set(currentLine, paramLines[i + 1]);
+          i += 2;
+        } else {
+          // Orphaned key or edge case
+          i += 1;
+        }
+      } else if (formatChangeIndex < 0 && i + 1 < paramLines.length && commonKeys.includes(paramLines[i + 1])) {
+        // No format change detected, try VALUE-KEY format
+        specs.set(paramLines[i + 1], currentLine);
+        i += 2;
+      } else {
+        // Unknown pattern, use heuristic
+        if (i + 1 < paramLines.length) {
+          const line1 = currentLine;
+          const line2 = paramLines[i + 1];
+
+          // Heuristic: shorter or equal length line is more likely to be the key
+          let key: string, value: string;
+          if (line1.length <= line2.length) {
+            key = line1;
+            value = line2;
+          } else {
+            key = line2;
+            value = line1;
+          }
+
+          if (key && value) {
+            specs.set(key, value);
+          }
+          i += 2;
+        } else {
+          i += 1;
+        }
       }
     }
 
