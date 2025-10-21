@@ -28,19 +28,31 @@ const AppContent: React.FC = () => {
   const hasLoadAttempted = useRef(false);
   
   // Column visibility configuration - track only visibility, titles are dynamic
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
-    id: true,
-    title: true,
-    brand: true,
-    type: true,
-    originalPrice: true,
-    price: true,
-    discount: true,
-    specification: true,
-    date: true,
-    remark: true,
-    created_at: true,
-    action: true,
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
+    // Try to load saved column visibility settings from localStorage
+    const savedSettings = localStorage.getItem('columnVisibility');
+    if (savedSettings) {
+      try {
+        return JSON.parse(savedSettings);
+      } catch (error) {
+        console.error('Failed to parse saved column visibility settings:', error);
+      }
+    }
+    // Default column visibility settings
+    return {
+      id: true,
+      title: true,
+      brand: true,
+      type: true,
+      originalPrice: true,
+      price: true,
+      discount: true,
+      specification: true,
+      date: true,
+      remark: true,
+      created_at: true,
+      action: true,
+    };
   });
 
   // Generate column config with current translations
@@ -67,6 +79,11 @@ const AppContent: React.FC = () => {
     }, {} as Record<string, boolean>);
     setColumnVisibility(newVisibility);
   };
+
+  // Save column visibility settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('columnVisibility', JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
 
   const loadProducts = useCallback(async () => {
     // Prevent duplicate calls in StrictMode
