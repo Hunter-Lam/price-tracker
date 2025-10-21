@@ -274,7 +274,11 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word'
           }}
-          ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}
+          ellipsis={{
+            rows: 3,
+            expandable: 'collapsible',
+            symbol: (expanded) => expanded ? t('table.collapse') : t('table.expand')
+          }}
         >
           {specification || '-'}
         </Paragraph>

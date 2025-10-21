@@ -54,7 +54,9 @@
     "confirmDeleteDesc": "Are you sure you want to delete this product?",
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "paginationTotal": "{{start}}-{{end}} of {{total}} items"
+    "paginationTotal": "{{start}}-{{end}} of {{total}} items",
+    "expand": "expand",
+    "collapse": "collapse"
   },
   "messages": {
     "noDataToExport": "No data to export",

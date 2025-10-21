@@ -54,7 +54,9 @@
     "confirmDeleteDesc": "確定要刪除這個產品嗎？",
     "confirm": "確認",
     "cancel": "取消",
-    "paginationTotal": "第 {{start}}-{{end}} 項，共 {{total}} 項"
+    "paginationTotal": "第 {{start}}-{{end}} 項，共 {{total}} 項",
+    "expand": "展開",
+    "collapse": "收起"
   },
   "messages": {
     "noDataToExport": "沒有數據可以導出",
