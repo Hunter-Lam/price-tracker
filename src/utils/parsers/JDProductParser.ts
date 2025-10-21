@@ -202,13 +202,17 @@ export class JDProductParser implements IProductInfoParser {
       try {
         const saleAttributes = JSON.parse(saleAttributesStr);
         // sale_attributes format: [{"dim":1,"saleName":"外观","saleValue":"原色钛金属","sequenceNo":2},...]
-        // Extract and combine all saleValue fields
+        // Extract and combine all key-value pairs in "saleName: saleValue" format
         const specs = saleAttributes
           .sort((a: any, b: any) => (a.sequenceNo || 0) - (b.sequenceNo || 0))
-          .map((attr: any) => attr.saleValue)
+          .map((attr: any) => {
+            const name = attr.saleName || '';
+            const value = attr.saleValue || '';
+            return name && value ? `${name}: ${value}` : value;
+          })
           .filter((value: string) => value && value.trim());
 
-        specification = specs.join(' ');
+        specification = specs.join('\n');
       } catch (e) {
         // If parsing fails, fallback to size field
         specification = json.wareInfoReadMap?.size || '';

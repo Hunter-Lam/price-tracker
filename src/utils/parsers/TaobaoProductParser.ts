@@ -316,7 +316,7 @@ export class TaobaoProductParser implements IProductInfoParser {
       specParts.push(`${mapKey}: ${mapValue}`);
     }
 
-    return specParts.join(', ');
+    return specParts.join('\n');
   }
 
   /**
