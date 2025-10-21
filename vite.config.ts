@@ -18,11 +18,19 @@ export default defineConfig(async () => ({
     port: 1420,
     strictPort: true,
     host: host || false,
-    hmr: true,
+    hmr: {
+      host: host || 'localhost',
+    },
     watch: {
-      // 3. tell vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
-      usePolling: true,
+      // 3. tell vite to ignore watching `src-tauri` directory and database files
+      ignored: [
+        "**/src-tauri/**",
+        "**/*.db",
+        "**/*.db-shm",
+        "**/*.db-wal"
+      ],
+      // Disable polling on Windows to prevent excessive restarts
+      usePolling: false,
     },
   },
 }));
