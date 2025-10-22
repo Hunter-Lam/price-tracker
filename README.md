@@ -104,7 +104,7 @@ chart filter by date
 show download location
 select downlaod location
 數量 x mL,L,兩,斤,kg,g,piece
-
+https://api.m.jd.com/?appid=pc-item-soa&
 
 
 三星（SAMSUNG）2TB SSD固态硬盘 M.2接口(NVMe协议PCIe5.0*4)AI电脑配件 读速14700MB/S 9100 PRO
