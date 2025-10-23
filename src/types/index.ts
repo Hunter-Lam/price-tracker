@@ -1,5 +1,11 @@
 import type { Dayjs } from 'dayjs';
-import type { SourceType, CategoryType, DiscountOrganizerType, DiscountMethodType } from '../constants';
+import type {
+  SourceType,
+  CategoryType,
+  DiscountOrganizerType,
+  DiscountMethodType,
+  UnitType
+} from '../constants';
 
 export interface Product {
   id?: number;
@@ -13,6 +19,10 @@ export interface Product {
   specification?: string;
   date: string;
   remark?: string;
+  quantity?: number;
+  unit?: UnitType;
+  unitPrice?: number;
+  comparisonUnit?: UnitType;
   created_at?: string;
 }
 
@@ -27,6 +37,10 @@ export interface ProductInput {
   specification?: string;
   date: string;
   remark?: string;
+  quantity?: number;
+  unit?: UnitType;
+  unitPrice?: number;
+  comparisonUnit?: UnitType;
 }
 
 export interface DiscountItem {
@@ -51,4 +65,8 @@ export interface FormData {
   specification: string;
   date: Dayjs;
   remark: string;
+  quantity?: number;
+  unit?: UnitType;
+  unitPrice?: number;
+  comparisonUnit?: UnitType;
 }

@@ -18,6 +18,12 @@ pub struct Product {
     pub specification: Option<String>,
     pub date: String,
     pub remark: Option<String>,
+    pub quantity: Option<f64>,
+    pub unit: Option<String>,
+    #[serde(rename = "unitPrice")]
+    pub unit_price: Option<f64>,
+    #[serde(rename = "comparisonUnit")]
+    pub comparison_unit: Option<String>,
     pub created_at: Option<String>,
 }
 
@@ -34,6 +40,12 @@ pub struct ProductInput {
     pub specification: Option<String>,
     pub date: String,
     pub remark: Option<String>,
+    pub quantity: Option<f64>,
+    pub unit: Option<String>,
+    #[serde(rename = "unitPrice")]
+    pub unit_price: Option<f64>,
+    #[serde(rename = "comparisonUnit")]
+    pub comparison_unit: Option<String>,
 }
 
 pub struct DatabaseState {
@@ -67,6 +79,10 @@ impl DatabaseState {
                 specification TEXT,
                 date TEXT NOT NULL,
                 remark TEXT,
+                quantity REAL,
+                unit TEXT,
+                unit_price REAL,
+                comparison_unit TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )",
             [],
@@ -75,6 +91,10 @@ impl DatabaseState {
         // Add new columns to existing table if they don't exist
         let _ = conn.execute("ALTER TABLE products ADD COLUMN original_price REAL", []);
         let _ = conn.execute("ALTER TABLE products ADD COLUMN discount TEXT", []);
+        let _ = conn.execute("ALTER TABLE products ADD COLUMN quantity REAL", []);
+        let _ = conn.execute("ALTER TABLE products ADD COLUMN unit TEXT", []);
+        let _ = conn.execute("ALTER TABLE products ADD COLUMN unit_price REAL", []);
+        let _ = conn.execute("ALTER TABLE products ADD COLUMN comparison_unit TEXT", []);
 
         // Rename url column to address if it exists
         let _ = conn.execute("ALTER TABLE products RENAME COLUMN url TO address", []);
@@ -99,8 +119,8 @@ async fn save_product(
     
     let mut stmt = conn
         .prepare(
-            "INSERT INTO products (address, title, brand, type, price, original_price, discount, specification, date, remark)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)"
+            "INSERT INTO products (address, title, brand, type, price, original_price, discount, specification, date, remark, quantity, unit, unit_price, comparison_unit)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)"
         )
         .map_err(|e| e.to_string())?;
 
@@ -116,12 +136,16 @@ async fn save_product(
             &product.specification,
             &product.date,
             &product.remark,
+            product.quantity,
+            &product.unit,
+            product.unit_price,
+            &product.comparison_unit,
         ))
         .map_err(|e| e.to_string())?;
 
     // Get the created product
     let mut stmt = conn
-        .prepare("SELECT id, address, title, brand, type, price, original_price, discount, specification, date, remark, created_at FROM products WHERE id = ?1")
+        .prepare("SELECT id, address, title, brand, type, price, original_price, discount, specification, date, remark, quantity, unit, unit_price, comparison_unit, created_at FROM products WHERE id = ?1")
         .map_err(|e| e.to_string())?;
 
     let product_row = stmt
@@ -138,7 +162,11 @@ async fn save_product(
                 specification: row.get(8)?,
                 date: row.get(9)?,
                 remark: row.get(10)?,
-                created_at: row.get(11)?,
+                quantity: row.get(11)?,
+                unit: row.get(12)?,
+                unit_price: row.get(13)?,
+                comparison_unit: row.get(14)?,
+                created_at: row.get(15)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -150,9 +178,9 @@ async fn save_product(
 async fn get_products(state: State<'_, DatabaseState>) -> Result<Vec<Product>, String> {
     println!("Rust: Getting products from database...");
     let conn = state.conn.lock().map_err(|e| e.to_string())?;
-    
+
     let mut stmt = conn
-        .prepare("SELECT id, address, title, brand, type, price, original_price, discount, specification, date, remark, created_at FROM products ORDER BY created_at DESC")
+        .prepare("SELECT id, address, title, brand, type, price, original_price, discount, specification, date, remark, quantity, unit, unit_price, comparison_unit, created_at FROM products ORDER BY created_at DESC")
         .map_err(|e| e.to_string())?;
 
     let product_iter = stmt
@@ -169,7 +197,11 @@ async fn get_products(state: State<'_, DatabaseState>) -> Result<Vec<Product>, S
                 specification: row.get(8)?,
                 date: row.get(9)?,
                 remark: row.get(10)?,
-                created_at: row.get(11)?,
+                quantity: row.get(11)?,
+                unit: row.get(12)?,
+                unit_price: row.get(13)?,
+                comparison_unit: row.get(14)?,
+                created_at: row.get(15)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -192,8 +224,9 @@ async fn update_product(
 
     conn.execute(
         "UPDATE products SET address = ?1, title = ?2, brand = ?3, type = ?4, price = ?5,
-         original_price = ?6, discount = ?7, specification = ?8, date = ?9, remark = ?10
-         WHERE id = ?11",
+         original_price = ?6, discount = ?7, specification = ?8, date = ?9, remark = ?10,
+         quantity = ?11, unit = ?12, unit_price = ?13, comparison_unit = ?14
+         WHERE id = ?15",
         (
             &product.address,
             &product.title,
@@ -205,6 +238,10 @@ async fn update_product(
             &product.specification,
             &product.date,
             &product.remark,
+            product.quantity,
+            &product.unit,
+            product.unit_price,
+            &product.comparison_unit,
             id,
         ),
     )
@@ -212,7 +249,7 @@ async fn update_product(
 
     // Get the updated product
     let mut stmt = conn
-        .prepare("SELECT id, address, title, brand, type, price, original_price, discount, specification, date, remark, created_at FROM products WHERE id = ?1")
+        .prepare("SELECT id, address, title, brand, type, price, original_price, discount, specification, date, remark, quantity, unit, unit_price, comparison_unit, created_at FROM products WHERE id = ?1")
         .map_err(|e| e.to_string())?;
 
     let product_row = stmt
@@ -229,7 +266,11 @@ async fn update_product(
                 specification: row.get(8)?,
                 date: row.get(9)?,
                 remark: row.get(10)?,
-                created_at: row.get(11)?,
+                quantity: row.get(11)?,
+                unit: row.get(12)?,
+                unit_price: row.get(13)?,
+                comparison_unit: row.get(14)?,
+                created_at: row.get(15)?,
             })
         })
         .map_err(|e| e.to_string())?;

@@ -27,7 +27,11 @@ export const DISCOUNT_METHOD_KEYS = [
   "firstPurchase", "limitedPurchase"
 ] as const;
 
+// All supported units (language-neutral keys)
+export const UNITS = ["ml", "l", "liang", "jin", "kg", "g", "piece"] as const;
+
 export type SourceType = typeof SOURCES[number];
 export type CategoryType = typeof CATEGORIES[number];
 export type DiscountOrganizerType = typeof DISCOUNT_ORGANIZERS[number];
 export type DiscountMethodType = typeof DISCOUNT_METHODS[number];
+export type UnitType = typeof UNITS[number];

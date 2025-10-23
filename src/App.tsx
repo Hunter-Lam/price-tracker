@@ -46,6 +46,7 @@ const AppContent: React.FC = () => {
       type: true,
       originalPrice: true,
       price: true,
+      unitPrice: true,
       discount: true,
       specification: true,
       date: true,
@@ -63,6 +64,7 @@ const AppContent: React.FC = () => {
     { key: "type", title: t('table.type'), visible: columnVisibility.type },
     { key: "originalPrice", title: t('table.originalPrice'), visible: columnVisibility.originalPrice },
     { key: "price", title: t('table.price'), visible: columnVisibility.price },
+    { key: "unitPrice", title: t('table.unitPrice'), visible: columnVisibility.unitPrice },
     { key: "discount", title: t('table.discount'), visible: columnVisibility.discount },
     { key: "specification", title: t('table.specification'), visible: columnVisibility.specification },
     { key: "date", title: t('table.date'), visible: columnVisibility.date },
@@ -130,6 +132,10 @@ const AppContent: React.FC = () => {
         specification: values.specification || "",
         date: values.date ? dayjs(values.date).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
         remark: values.remark || "",
+        quantity: values.quantity || undefined,
+        unit: values.unit || undefined,
+        unitPrice: values.unitPrice || undefined,
+        comparisonUnit: values.comparisonUnit || undefined,
       };
 
       if (editingProductId !== null) {
@@ -203,6 +209,10 @@ const AppContent: React.FC = () => {
         specification: values.specification || "",
         date: values.date ? dayjs(values.date).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
         remark: values.remark || "",
+        quantity: values.quantity || undefined,
+        unit: values.unit || undefined,
+        unitPrice: values.unitPrice || undefined,
+        comparisonUnit: values.comparisonUnit || undefined,
       };
 
       // Save as new product (ignore editingProductId)
@@ -292,6 +302,10 @@ const AppContent: React.FC = () => {
       specification: product.specification || '',
       date: product.date ? dayjs(product.date) : dayjs(),
       remark: product.remark || '',
+      quantity: product.quantity || undefined,
+      unit: product.unit || undefined,
+      unitPrice: product.unitPrice || undefined,
+      comparisonUnit: product.comparisonUnit || undefined,
       source: {
         type: isUrl(product.address || '') ? 'URL' : '商鋪',
         address: product.address || ''

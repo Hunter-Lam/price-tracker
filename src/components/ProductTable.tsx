@@ -8,6 +8,7 @@ import { ColumnConfig } from "./ColumnController";
 import { exportToCSV, getVisibleColumnKeys } from "../utils/csvExport";
 import { parseCSV, importCSVFile, generateCSVTemplate, type CSVImportResult } from "../utils/csvImport";
 import { openExternalUrl } from "../utils/openUrl";
+import { calculatePricePerJin, isConvertibleToJin, ceilToTwo, translateUnit } from "../utils/unitConversion";
 import dayjs from "dayjs";
 
 const { Text, Paragraph } = Typography;
@@ -237,6 +238,75 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
             )}
           </div>
         );
+      },
+    },
+    {
+      title: t('table.unitPrice'),
+      key: "unitPrice",
+      width: 110,
+      align: 'right',
+      sorter: (a, b) => {
+        const unitPriceA = a.unitPrice || 0;
+        const unitPriceB = b.unitPrice || 0;
+        return unitPriceA - unitPriceB;
+      },
+      render: (_, record: Product) => {
+        // Show saved unit price if available
+        if (record.unitPrice && record.comparisonUnit) {
+          const displayUnitPrice = ceilToTwo(record.unitPrice);
+          const translatedComparisonUnit = translateUnit(record.comparisonUnit, t);
+          const translatedUnit = record.unit ? translateUnit(record.unit, t) : '';
+
+          return (
+            <div>
+              <div>
+                <Typography.Text strong style={{ color: '#1890ff' }}>
+                  ¥{displayUnitPrice.toFixed(2)}
+                </Typography.Text>
+                <Typography.Text style={{ fontSize: '11px', color: '#8c8c8c', marginLeft: '2px' }}>
+                  /{translatedComparisonUnit}
+                </Typography.Text>
+              </div>
+              {record.quantity && record.unit && (
+                <div style={{ fontSize: '10px', color: '#bfbfbf', marginTop: '2px' }}>
+                  ({record.quantity} {translatedUnit})
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // Fallback: calculate on-the-fly if no saved unit price (legacy records)
+        if (record.quantity && record.quantity > 0 && record.unit) {
+          const unitPrice = ceilToTwo(record.price / record.quantity);
+          const pricePerJin = isConvertibleToJin(record.unit)
+            ? calculatePricePerJin(record.price, record.quantity, record.unit)
+            : null;
+          const displayPricePerJin = pricePerJin !== null ? ceilToTwo(pricePerJin) : null;
+          const translatedUnit = translateUnit(record.unit, t);
+
+          return (
+            <div>
+              <div>
+                <Typography.Text strong style={{ color: '#1890ff' }}>
+                  ¥{unitPrice.toFixed(2)}
+                </Typography.Text>
+                <Typography.Text style={{ fontSize: '11px', color: '#8c8c8c', marginLeft: '2px' }}>
+                  /{translatedUnit}
+                </Typography.Text>
+              </div>
+              {displayPricePerJin !== null && record.unit !== 'jin' && (
+                <div style={{ fontSize: '11px', color: '#52c41a', marginTop: '2px' }}>
+                  ≈¥{displayPricePerJin.toFixed(2)}/{translateUnit('jin', t)}
+                </div>
+              )}
+              <div style={{ fontSize: '10px', color: '#bfbfbf', marginTop: '2px' }}>
+                {record.quantity} {translatedUnit}
+              </div>
+            </div>
+          );
+        }
+        return '-';
       },
     },
     {
