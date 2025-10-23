@@ -90,20 +90,22 @@ parse product info button $1
 jd info formats and calibration $28.87
 JD product parser extract brand name $9.26
 larger window $0.1556
+fix discount parser $4.71
+parse specification with line break $0.69
+specification parse default order $4.01
+remember column controller settings $0.2876
+don't restart on Windows $0.64
+make specification collapsible $0.4071
+unit price $32.93
 
-unit price
 specification template
-specification parse Line Break
-specification parse default order 
-don't restart each submit time
-remember column settings
-specification expendable
 chart filter by date
 
 
-show download location
-select downlaod location
+export show download location
+export select downlaod location
 數量 x mL,L,兩,斤,kg,g,piece
+
 https://api.m.jd.com/?appid=pc-item-soa&
 
 
