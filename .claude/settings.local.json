@@ -17,7 +17,17 @@
       "Bash(xargs kill:*)",
       "Bash(npm run dev:*)",
       "Bash(find:*)",
-      "Bash(npm info:*)"
+      "Bash(npm info:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(sqlite3:*)",
+      "Bash(cargo check:*)",
+      "Bash(cargo clean:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(node test_jd_spec_parser.js)",
+      "Bash(node test_parser.js)",
+      "Bash(node test_parser.cjs)",
+      "Bash(node test_taobao_parser.cjs)"
     ],
     "deny": [],
     "ask": []
