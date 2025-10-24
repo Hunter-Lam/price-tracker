@@ -39,6 +39,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     form.validateFields([["source", "address"]]);
   }, [sourceTypeRule, form]);
 
+  const handleUnitChange = (unit: string) => {
+    const currentComparisonUnit = form.getFieldValue('comparisonUnit');
+    const defaultComparisonUnit = unit === 'piece' ? 'piece' : 'jin';
+
+    // Auto-set comparison unit if empty or incompatible
+    if (!currentComparisonUnit ||
+        (unit === 'piece' && currentComparisonUnit !== 'piece') ||
+        (unit !== 'piece' && currentComparisonUnit === 'piece')) {
+      form.setFieldsValue({ comparisonUnit: defaultComparisonUnit });
+    }
+  };
+
   const handleOriginalPriceChange = (value: number | null) => {
     // Clear any existing timeout
     if (timeoutRef.current) {
@@ -150,7 +162,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             label={t('form.specUnit')}
             tooltip={t('form.specUnitTooltip')}
           >
-            <UnitSelect placeholder="g" />
+            <UnitSelect placeholder="g" onChange={handleUnitChange} />
           </Form.Item>
         </Col>
         <Col xs={24} sm={4}>
