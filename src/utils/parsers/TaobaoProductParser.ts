@@ -383,7 +383,7 @@ export class TaobaoProductParser implements IProductInfoParser {
     // Common parameter keys to help identify which line is the key
     const commonKeys = [
       '品牌', '产地', '型号', '规格', '颜色分类', '材质', '款式', '货号',
-      '大小', '适用年龄段', '功能', '包装', '包装规格',
+      '大小', '适用年龄段', '功能', '包装规格',
       '系列', '省份', '城市', '规格描述', '是否进口', '总净含量',
       '生产许可证编号', '厂名', '厂址', '厂家联系方式', '配料表',
       '保质期', '净含量', '成分', '特性', '用途', '特殊添加成分',
