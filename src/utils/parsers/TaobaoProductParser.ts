@@ -11,6 +11,7 @@ import type { IProductInfoParser, ParseResult } from './types';
  * 优惠前 ¥ 12.37 (or 新品促销 ¥ 19.75)
  * 满300减30
  * 超级立减3.47元
+ * 直降5.79元
  *
  * 参数信息
  * 品牌 Colgate/高露洁
@@ -55,17 +56,17 @@ export class TaobaoProductParser implements IProductInfoParser {
       // Extract title (first line)
       const title = lines[0];
 
-      // Extract brand from parameters section
-      const brand = this.extractBrand(lines);
-      if (!brand) {
-        warnings.push('Brand not found in parameters');
-      }
-
       // Extract prices
       const { price, originalPrice } = this.extractPrices(lines, warnings);
 
-      // Extract specifications
-      const specification = this.extractSpecification(lines);
+      // Extract specifications (returns both map and formatted string)
+      const { specsMap, specsString } = this.extractSpecification(lines);
+
+      // Extract brand from specs map
+      const brand = this.extractBrandFromSpecs(specsMap);
+      if (!brand) {
+        warnings.push('Brand not found in parameters');
+      }
 
       // Extract discounts
       const discountInfo = this.extractDiscounts(lines);
@@ -75,7 +76,7 @@ export class TaobaoProductParser implements IProductInfoParser {
         brand: brand || '',
         price,
         originalPrice,
-        specification,
+        specification: specsString,
         date: dayjs()
       };
 
@@ -97,67 +98,39 @@ export class TaobaoProductParser implements IProductInfoParser {
   }
 
   /**
-   * Extract brand from parameters section
+   * Extract brand from specs map
    * Unified format: "中文/英文" or just brand name if only one part
    */
-  private extractBrand(lines: string[]): string {
-    // Look for "品牌" line, then check both before and after for brand name
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i] === '品牌') {
-        // Try VALUE-KEY format first (Tmall): brand is on previous line
-        let brandLine = '';
-        if (i > 0) {
-          brandLine = lines[i - 1];
-        }
+  private extractBrandFromSpecs(specsMap: Map<string, string>): string {
+    const brandValue = specsMap.get('品牌');
 
-        // If previous line looks like a valid brand, use it
-        // Otherwise, try KEY-VALUE format (Taobao): brand is on next line
-        const commonKeys = ['品牌', '产地', '型号', '规格', '颜色分类', '材质', '款式', '货号', '大小'];
-        if (!brandLine || commonKeys.includes(brandLine)) {
-          // Previous line is not a valid brand (it's empty or another key)
-          // Try next line (KEY-VALUE format)
-          if (i < lines.length - 1) {
-            brandLine = lines[i + 1];
-          }
-        }
+    if (!brandValue) {
+      return '';
+    }
 
-        if (!brandLine) {
-          continue;
-        }
+    // Handle format like "Colgate/高露洁" or "SANXINGDUI MUSEUM/三星堆博物馆"
+    const parts = brandValue.split('/').map(p => p.trim());
 
-        // Handle format like "Colgate/高露洁" or "SANXINGDUI MUSEUM/三星堆博物馆"
-        const parts = brandLine.split('/').map(p => p.trim());
+    if (parts.length >= 2) {
+      // Determine which is Chinese and which is English
+      const isChinese = (text: string) => /[\u4e00-\u9fa5]/.test(text);
+      const brandCn = parts.find(p => isChinese(p)) || '';
+      const brandEn = parts.find(p => !isChinese(p) && /^[A-Za-z]/.test(p)) || '';
 
-        if (parts.length >= 2) {
-          // Determine which is Chinese and which is English
-          const isChinese = (text: string) => /[\u4e00-\u9fa5]/.test(text);
-          const brandCn = parts.find(p => isChinese(p)) || '';
-          const brandEn = parts.find(p => !isChinese(p) && /^[A-Za-z]/.test(p)) || '';
-
-          // Return unified format: "中文/英文"
-          if (brandCn && brandEn) {
-            return `${brandCn}/${brandEn}`;
-          } else if (brandCn) {
-            return brandCn;
-          } else if (brandEn) {
-            return brandEn;
-          }
-        }
-
-        // Single part, return as is
-        return parts[0] || '';
+      // Return unified format: "中文/英文"
+      if (brandCn && brandEn) {
+        return `${brandCn}/${brandEn}`;
+      } else if (brandCn) {
+        return brandCn;
+      } else if (brandEn) {
+        return brandEn;
       }
     }
 
-    // Fallback: try to extract from first line
-    const firstLine = lines[0];
-    const brandMatch = firstLine.match(/^([^牌]{2,10})牌/);
-    if (brandMatch) {
-      return brandMatch[1];
-    }
-
-    return '';
+    // Single part, return as is
+    return parts[0] || '';
   }
+
 
   /**
    * Extract prices (handles券后 and 优惠前 format)
@@ -260,8 +233,10 @@ export class TaobaoProductParser implements IProductInfoParser {
    * - Detect format automatically (KEY-VALUE for Taobao, VALUE-KEY for Tmall)
    * - Extract all key-value pairs in the parameters section
    * - Each pair consists of two consecutive lines
+   *
+   * @returns Object with specsMap (Map of key-value pairs) and specsString (formatted string)
    */
-  private extractSpecification(lines: string[]): string {
+  private extractSpecification(lines: string[]): { specsMap: Map<string, string>; specsString: string } {
     const specs: Map<string, string> = new Map();
 
     // Find "参数信息" section
@@ -278,7 +253,7 @@ export class TaobaoProductParser implements IProductInfoParser {
     }
 
     if (paramsStartIndex === -1) {
-      return '';
+      return { specsMap: new Map(), specsString: '' };
     }
 
     // Filter out empty lines in parameters section
@@ -291,7 +266,7 @@ export class TaobaoProductParser implements IProductInfoParser {
     }
 
     if (paramLines.length === 0) {
-      return '';
+      return { specsMap: new Map(), specsString: '' };
     }
 
     // Common parameter keys to help identify which line is the key
@@ -426,7 +401,10 @@ export class TaobaoProductParser implements IProductInfoParser {
       specParts.push(`${mapKey}: ${mapValue}`);
     }
 
-    return specParts.join('\n');
+    return {
+      specsMap: specs,
+      specsString: specParts.join('\n')
+    };
   }
 
   /**
@@ -446,9 +424,10 @@ export class TaobaoProductParser implements IProductInfoParser {
           discountType: '滿減' as const,
           discountValue: `满${threshold}减${reduction}`
         });
+        continue;
       }
 
-      // Pattern: 超级立减3.47元, 立减3.47元, 立减4元
+      // Pattern: 超级立减3.47元, 立减3.47元, 立减4元 (platform discounts)
       const instantMatch = line.match(/立减(\d+\.?\d*)元?/i);
       if (instantMatch) {
         const reduction = parseFloat(instantMatch[1]);
@@ -457,6 +436,19 @@ export class TaobaoProductParser implements IProductInfoParser {
           discountType: '立減' as const,
           discountValue: reduction
         });
+        continue;
+      }
+
+      // Pattern: 直降5.79元 (store discounts)
+      const storeDiscountMatch = line.match(/直降(\d+\.?\d*)元?/i);
+      if (storeDiscountMatch) {
+        const reduction = parseFloat(storeDiscountMatch[1]);
+        discountInfo.push({
+          discountOwner: '店舖' as const,
+          discountType: '立減' as const,
+          discountValue: reduction
+        });
+        continue;
       }
 
       // Pattern: 淘金币已抵9.54元
@@ -468,6 +460,7 @@ export class TaobaoProductParser implements IProductInfoParser {
           discountType: '立減' as const,
           discountValue: reduction
         });
+        continue;
       }
     }
 
