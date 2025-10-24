@@ -309,22 +309,25 @@ export class TaobaoProductParser implements IProductInfoParser {
       '尺码', '重量', '产品名称', '适用性别', '适用季节'
     ];
 
-    // Detect format change: VALUE-KEY (Tmall) → KEY-VALUE (Taobao)
-    // Strategy 1: Find where the format switches by looking for consecutive known keys
-    // The format changes at the SECOND key of two consecutive keys
+    // Detect format and format change point
+    // 3 possible formats:
+    // 1. All VALUE-KEY pairs
+    // 2. All KEY-VALUE pairs
+    // 3. VALUE-KEY pairs, then KEY-VALUE pairs (format switches once, never back)
+    //
+    // Strategy: Find format change by detecting consecutive known keys
     let formatChangeIndex = -1;
     for (let j = 0; j < paramLines.length - 1; j++) {
-      // If current line is a known key AND next line is also a known key,
-      // this indicates the end of VALUE-KEY format and start of KEY-VALUE format
-      // The format change happens at the SECOND key (j + 1)
+      // Two consecutive known keys indicate format switch point
+      // The first key is the last key in VALUE-KEY format
+      // The second key is the first key in KEY-VALUE format
       if (commonKeys.includes(paramLines[j]) && commonKeys.includes(paramLines[j + 1])) {
-        formatChangeIndex = j + 1;
+        formatChangeIndex = j + 1; // Format changes at the second key
         break;
       }
     }
 
-    // Strategy 2: If no consecutive keys found, check if the entire section is VALUE-KEY format
-    // Count how many pairs have the pattern: non-key followed by key
+    // If no format change detected, determine which format dominates
     if (formatChangeIndex === -1) {
       let valueKeyCount = 0;
       let keyValueCount = 0;
@@ -340,58 +343,63 @@ export class TaobaoProductParser implements IProductInfoParser {
         }
       }
 
-      // If VALUE-KEY pairs dominate, treat entire section as VALUE-KEY
-      // Otherwise, treat entire section as KEY-VALUE
       if (valueKeyCount > keyValueCount) {
-        formatChangeIndex = paramLines.length; // All VALUE-KEY, no format change
+        formatChangeIndex = paramLines.length; // All VALUE-KEY
       } else {
-        formatChangeIndex = 0; // All KEY-VALUE, format change at start
+        formatChangeIndex = 0; // All KEY-VALUE
       }
     }
 
-    // Parse VALUE-KEY section (Tmall style)
+    // Parse VALUE-KEY section (before format change point)
     let i = 0;
     if (formatChangeIndex > 0) {
       while (i < formatChangeIndex) {
         if (i + 1 < paramLines.length && commonKeys.includes(paramLines[i + 1])) {
-          // VALUE-KEY format
+          // VALUE-KEY format: value is on current line, key is on next line
           specs.set(paramLines[i + 1], paramLines[i]);
           i += 2;
         } else {
-          // Orphaned line or unknown pattern, skip
+          // Orphaned line, skip
           i += 1;
         }
       }
     }
 
-    // Parse KEY-VALUE section (Taobao style)
+    // Parse KEY-VALUE section (from format change point onwards)
     const startIndex = formatChangeIndex > 0 ? formatChangeIndex : 0;
     i = startIndex;
     while (i < paramLines.length) {
       const currentLine = paramLines[i];
 
       if (commonKeys.includes(currentLine)) {
-        // This is a KEY, next line should be VALUE
+        // KEY-VALUE format: key is on current line, value is on next line
         if (i + 1 < paramLines.length && !commonKeys.includes(paramLines[i + 1])) {
           specs.set(currentLine, paramLines[i + 1]);
           i += 2;
         } else {
-          // Orphaned key or edge case
+          // Orphaned key, skip
           i += 1;
         }
-      } else if (formatChangeIndex < 0 && i + 1 < paramLines.length && commonKeys.includes(paramLines[i + 1])) {
-        // No format change detected, try VALUE-KEY format
+      } else if (formatChangeIndex === 0 && i + 1 < paramLines.length && commonKeys.includes(paramLines[i + 1])) {
+        // Edge case: formatChangeIndex=0 but we found VALUE-KEY pattern
+        // This can happen if our detection was wrong, fall back to VALUE-KEY
         specs.set(paramLines[i + 1], currentLine);
         i += 2;
       } else {
-        // Unknown pattern, use heuristic
+        // Unknown key - determine format based on context
         if (i + 1 < paramLines.length) {
           const line1 = currentLine;
           const line2 = paramLines[i + 1];
 
-          // Heuristic: shorter or equal length line is more likely to be the key
+          // If we're past format change point (formatChangeIndex > 0), assume KEY-VALUE format
+          // Otherwise, use heuristic
           let key: string, value: string;
-          if (line1.length <= line2.length) {
+          if (formatChangeIndex > 0 && startIndex > 0) {
+            // We're in KEY-VALUE section, treat current line as key
+            key = line1;
+            value = line2;
+          } else if (line1.length <= line2.length) {
+            // Heuristic: shorter or equal length line is more likely the key
             key = line1;
             value = line2;
           } else {
@@ -404,6 +412,7 @@ export class TaobaoProductParser implements IProductInfoParser {
           }
           i += 2;
         } else {
+          // Last orphaned line, skip
           i += 1;
         }
       }
