@@ -94,29 +94,21 @@ fix discount parser $4.71
 parse specification with line break $0.69
 specification parse default order $4.01
 remember column controller settings $0.2876
-don't restart on Windows $0.64
+~~don't restart on Windows~~ ✅ FIXED - Database moved to app data directory $0.64+$4.65+$2.87
 make specification collapsible $0.4071
 unit price $32.93
-
+parse specification from taobao product information $3.88 $6.97
 parse specification from JD product information
-click to open a modal to show the whole specification 
-copy text: https://api.m.jd.com/?appid=pc-item-soa&
+click to open a modal to show the whole specification $1.28 
+copy text: https://api.m.jd.com/?appid=pc-item-soa& $2.60
 specification template
 chart filter by date
+parse and fill the amount and unit $4.34
+select unit and select comparison unit as well $2.25
 
 
 export show download location
 export select downlaod location
-數量 x mL,L,兩,斤,kg,g,piece
-
-
-酒，食品添加劑
-手機膜 品牌 優惠
-艾 品牌
-單價自動填充
-單位關聯輸入
-忽略md db
-書
 
 
 三星（SAMSUNG）2TB SSD固态硬盘 M.2接口(NVMe协议PCIe5.0*4)AI电脑配件 读速14700MB/S 9100 PRO
