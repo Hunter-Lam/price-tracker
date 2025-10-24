@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Table, TableColumnsType, Typography, Tag, Space, Button, Popconfirm, Row, Col, App, Modal, Upload, Alert, Divider } from "antd";
-import { LinkOutlined, DeleteOutlined, DownloadOutlined, UploadOutlined, InfoCircleOutlined, EditOutlined, EnvironmentOutlined } from "@ant-design/icons";
+import { LinkOutlined, DeleteOutlined, DownloadOutlined, UploadOutlined, InfoCircleOutlined, EditOutlined, EnvironmentOutlined, CopyOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Product, ProductInput } from "../types";
@@ -43,6 +43,10 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+
+  // Specification modal state
+  const [specModalVisible, setSpecModalVisible] = useState(false);
+  const [selectedSpec, setSelectedSpec] = useState<string>('');
   // Generate filter options from data
   const filterOptions = useMemo(() => {
     const brands = Array.from(new Set(data.map(item => item.brand))).sort();
@@ -337,22 +341,26 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       dataIndex: "specification",
       key: "specification",
       width: 140,
-      render: (specification: string) => (
-        <Paragraph
-          style={{
-            margin: 0,
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word'
-          }}
-          ellipsis={{
-            rows: 3,
-            expandable: 'collapsible',
-            symbol: (expanded) => expanded ? t('table.collapse') : t('table.expand')
-          }}
-        >
-          {specification || '-'}
-        </Paragraph>
-      ),
+      render: (specification: string) => {
+        if (!specification) return '-';
+        return (
+          <Paragraph
+            style={{
+              margin: 0,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              cursor: 'pointer'
+            }}
+            ellipsis={{ rows: 3 }}
+            onClick={() => {
+              setSelectedSpec(specification);
+              setSpecModalVisible(true);
+            }}
+          >
+            {specification}
+          </Paragraph>
+        );
+      },
     },
     {
       title: t('table.date'),
@@ -637,6 +645,40 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
             </>
           )}
         </Space>
+      </Modal>
+
+      {/* Specification Modal */}
+      <Modal
+        title={
+          <Space>
+            {t('table.specification')}
+            <Button
+              type="text"
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={() => {
+                navigator.clipboard.writeText(selectedSpec);
+                message.success(t('messages.specificationCopied'));
+              }}
+            />
+          </Space>
+        }
+        open={specModalVisible}
+        onCancel={() => setSpecModalVisible(false)}
+        footer={null}
+        width={600}
+        centered
+      >
+        <Paragraph
+          style={{
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            maxHeight: '60vh',
+            overflowY: 'auto'
+          }}
+        >
+          {selectedSpec}
+        </Paragraph>
       </Modal>
     </Space>
   );
