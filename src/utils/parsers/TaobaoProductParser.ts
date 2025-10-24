@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import type { FormData, DiscountItem } from '../../types';
 import type { IProductInfoParser, ParseResult } from './types';
+import { UNITS, type UnitType } from '../../constants';
 
 /**
  * Parser for Taobao and Tmall product information (plain text format)
@@ -54,7 +55,7 @@ export class TaobaoProductParser implements IProductInfoParser {
       const warnings: string[] = [];
 
       // Extract title (first line)
-      const title = lines[0];
+      let title = lines[0];
 
       // Extract prices
       const { price, originalPrice } = this.extractPrices(lines, warnings);
@@ -68,6 +69,20 @@ export class TaobaoProductParser implements IProductInfoParser {
         warnings.push('Brand not found in parameters');
       }
 
+      // Extract quantity and unit (from specs first, then from title)
+      let { quantity, unit } = this.extractQuantityAndUnit(specsMap);
+
+      // If not found in specs, try extracting from title
+      if (!quantity || !unit) {
+        const titleResult = this.extractQuantityFromTitle(title);
+        if (titleResult.quantity && titleResult.unit) {
+          quantity = titleResult.quantity;
+          unit = titleResult.unit;
+          // Clean the title by removing the quantity/unit pattern
+          title = titleResult.cleanedTitle;
+        }
+      }
+
       // Extract discounts
       const discountInfo = this.extractDiscounts(lines);
 
@@ -77,7 +92,9 @@ export class TaobaoProductParser implements IProductInfoParser {
         price,
         originalPrice,
         specification: specsString,
-        date: dayjs()
+        date: dayjs(),
+        quantity,
+        unit
       };
 
       if (discountInfo.length > 0) {
@@ -95,6 +112,100 @@ export class TaobaoProductParser implements IProductInfoParser {
         error: error instanceof Error ? error.message : 'Unknown parsing error'
       };
     }
+  }
+
+  /**
+   * Extract quantity and unit from title
+   * Patterns: 1L, 500ml, 200g, 1L*1, 500ml*2, etc.
+   * Returns cleaned title with quantity/unit pattern removed
+   */
+  private extractQuantityFromTitle(title: string): { quantity?: number; unit?: UnitType; cleanedTitle: string } {
+    // Pattern: number + optional space + unit + optional multiplier (*number)
+    // Examples: 1L, 500ml, 1L*1, 500ml*2, 200g, 200克
+    const pattern = /(\d+\.?\d*)\s*(ml|l|g|kg|克|千克|斤|两|升|毫升|piece|個|个)(\*\d+)?/gi;
+
+    let quantity: number | undefined;
+    let unit: UnitType | undefined;
+    let cleanedTitle = title;
+
+    const matches = Array.from(title.matchAll(pattern));
+
+    if (matches.length > 0) {
+      // Use the last match (often the most relevant)
+      const match = matches[matches.length - 1];
+      const matchedQuantity = parseFloat(match[1]);
+      let matchedUnit = match[2].toLowerCase();
+
+      // Normalize Chinese units to English keys
+      const unitMap: Record<string, string> = {
+        '克': 'g',
+        '千克': 'kg',
+        '斤': 'jin',
+        '两': 'liang',
+        '升': 'l',
+        '毫升': 'ml',
+        '個': 'piece',
+        '个': 'piece'
+      };
+
+      matchedUnit = unitMap[matchedUnit] || matchedUnit;
+
+      // Validate unit is a valid UnitType
+      if (UNITS.includes(matchedUnit as UnitType)) {
+        quantity = matchedQuantity;
+        unit = matchedUnit as UnitType;
+
+        // Remove the matched pattern from title
+        cleanedTitle = title.replace(match[0], '').trim();
+      }
+    }
+
+    return { quantity, unit, cleanedTitle };
+  }
+
+  /**
+   * Extract quantity and unit from specs map
+   * Priority order: 单件净含量 > 净含量 > 规格
+   * Supports formats: 500ml, 750mL, 200g, 200克, etc.
+   */
+  private extractQuantityAndUnit(specsMap: Map<string, string>): { quantity?: number; unit?: UnitType } {
+    // Priority fields to check
+    const fields = ['单件净含量', '净含量', '规格'];
+
+    for (const field of fields) {
+      const value = specsMap.get(field);
+      if (!value) continue;
+
+      // Match patterns like: 500ml, 750mL, 200g, 200克, 1.5L, 1.5升
+      const match = value.match(/^(\d+\.?\d*)\s*(ml|l|g|kg|克|千克|斤|两|升|毫升|piece|個|个)?$/i);
+      if (match) {
+        const quantity = parseFloat(match[1]);
+        let unitStr = match[2]?.toLowerCase() || '';
+
+        // Normalize Chinese units to English keys
+        const unitMap: Record<string, string> = {
+          '克': 'g',
+          '千克': 'kg',
+          '斤': 'jin',
+          '两': 'liang',
+          '升': 'l',
+          '毫升': 'ml',
+          '個': 'piece',
+          '个': 'piece'
+        };
+
+        unitStr = unitMap[unitStr] || unitStr;
+
+        // Validate unit is a valid UnitType
+        const unit = UNITS.includes(unitStr as UnitType) ? (unitStr as UnitType) : undefined;
+
+        if (quantity > 0 && unit) {
+          return { quantity, unit };
+        }
+      }
+    }
+
+    return {};
   }
 
   /**
