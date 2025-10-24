@@ -1,0 +1,11 @@
+# Ignore patterns for cargo-watch
+# These files will be ignored during development hot-reload
+
+# SQLite database files
+products.db
+products.db-shm
+products.db-wal
+
+# Other files to ignore
+*.tmp
+*.temp

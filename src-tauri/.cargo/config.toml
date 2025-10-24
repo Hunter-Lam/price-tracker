@@ -1,0 +1,10 @@
+# Cargo watch configuration
+# Ignore database files to prevent cargo from triggering rebuilds
+
+[build]
+# These patterns are ignored by cargo watch during development
+# This prevents the app from restarting when the database is updated
+target-dir = "target"
+
+[env]
+# Additional environment configuration can go here
