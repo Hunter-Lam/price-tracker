@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Button, Form, Input, Select, Space, App } from "antd";
+import { Button, Form, Input, Select, Space, App, Tooltip } from "antd";
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import type { FormInstance } from "antd";
 import { useTranslation } from 'react-i18next';
 import { SOURCES, SOURCE_KEYS } from "../constants";
@@ -15,6 +16,17 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
   const { t } = useTranslation();
+
+  const JD_API_URL = 'https://api.m.jd.com/?appid=pc-item-soa&';
+
+  const handleCopyApiUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(JD_API_URL);
+      message.success(t('source.apiUrlCopied'));
+    } catch (error) {
+      message.error(t('source.copyFailed'));
+    }
+  };
 
   const handleParseUrl = async () => {
     const value = form.getFieldValue(["source", "address"]);
@@ -57,7 +69,19 @@ const SourceInput: React.FC<SourceInputProps> = ({ form, onSourceTypeChange }) =
   };
 
   return (
-    <Form.Item label={t('source.productSource')}>
+    <Form.Item
+      label={
+        <Space size={8}>
+          <span>{t('source.productSource')}</span>
+          <Tooltip title={t('source.copyJdApiUrl')}>
+            <QuestionCircleOutlined
+              onClick={handleCopyApiUrl}
+              style={{ cursor: 'pointer', fontSize: '14px', color: '#1890ff' }}
+            />
+          </Tooltip>
+        </Space>
+      }
+    >
       <Space.Compact style={{ width: '100%' }}>
         <Form.Item noStyle name={["source", "type"]} initialValue={SOURCES[0]}>
           <Select 

@@ -111,7 +111,10 @@
     "productInfoSuccess": "Product information fetched successfully!",
     "productInfoFailed": "Unable to fetch product information, please fill manually",
     "urlCleaned": "URL cleaned, please fill product information manually",
-    "parseError": "Error occurred while parsing URL"
+    "parseError": "Error occurred while parsing URL",
+    "copyJdApiUrl": "Copy JD API URL",
+    "apiUrlCopied": "JD API URL copied to clipboard",
+    "copyFailed": "Failed to copy to clipboard"
   },
   "discountParser": {
     "title": "Discount Information Parser",

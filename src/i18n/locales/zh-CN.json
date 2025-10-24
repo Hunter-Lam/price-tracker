@@ -111,7 +111,10 @@
     "productInfoSuccess": "產品信息獲取成功！",
     "productInfoFailed": "無法獲取產品信息，請手動填寫",
     "urlCleaned": "URL 已清理，請手動填寫產品信息",
-    "parseError": "解析 URL 時發生錯誤"
+    "parseError": "解析 URL 時發生錯誤",
+    "copyJdApiUrl": "複製京東 API 連結",
+    "apiUrlCopied": "京東 API 連結已複製到剪貼板",
+    "copyFailed": "複製到剪貼板失敗"
   },
   "discountParser": {
     "title": "優惠資訊解析器",
