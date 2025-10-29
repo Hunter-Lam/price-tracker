@@ -19,6 +19,7 @@ interface ProductFormProps {
   isEditing?: boolean;
   onCancelEdit?: () => void;
   onInsertAsNew?: () => void;
+  specImporterButton?: React.ReactNode;
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({
@@ -31,6 +32,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   isEditing = false,
   onCancelEdit,
   onInsertAsNew,
+  specImporterButton,
 }) => {
   const { t } = useTranslation();
   const timeoutRef = useRef<number | null>(null);
@@ -254,7 +256,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       <Form.Item
         name="specification"
-        label={t('form.specification')}
+        label={
+          <Space>
+            {t('form.specification')}
+            {specImporterButton}
+          </Space>
+        }
       >
         <Input.TextArea
           rows={3}

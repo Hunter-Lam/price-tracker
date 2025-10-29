@@ -284,5 +284,25 @@
     "instructions": "使用說明",
     "instructionsDetail": "請貼上支援格式的產品資訊，點擊「解析」自動填入表單欄位。",
     "applyToForm": "應用到表單"
+  },
+  "jdSpecImporter": {
+    "button": "導入京東規格",
+    "title": "從京東 HTML 導入規格",
+    "instructions": "使用說明",
+    "step1": "開啟京東商品頁面",
+    "step2": "右鍵點擊 → 選擇「查看網頁原始碼」（或按 Ctrl+U / Cmd+Option+U）",
+    "step3": "複製所有 HTML 內容（Ctrl+A, Ctrl+C）",
+    "step4": "貼到下方文字區域",
+    "step5": "點擊「解析 HTML」以提取產品資訊",
+    "placeholder": "請在此貼上完整的京東商品頁面 HTML...",
+    "parseButton": "解析 HTML",
+    "clear": "清空",
+    "cancel": "取消",
+    "parseSuccess": "成功解析產品資訊！",
+    "parseError": "無法在 HTML 中找到產品資訊。請確保您複製了完整的京東商品頁面。",
+    "parseWarning": "請先貼上 HTML 內容",
+    "importSuccess": "京東規格已成功導入！",
+    "applyToForm": "應用到表單",
+    "specifications": "規格"
   }
 }

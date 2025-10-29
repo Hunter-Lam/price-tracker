@@ -285,5 +285,25 @@
     "instructions": "How to use",
     "instructionsDetail": "Paste product information in the supported format. Click 'Parse' to automatically fill the form fields.",
     "applyToForm": "Apply to Form"
+  },
+  "jdSpecImporter": {
+    "button": "Import JD Specs",
+    "title": "Import from JD.com HTML",
+    "instructions": "Instructions",
+    "step1": "Open a JD.com product page",
+    "step2": "Right-click → Select 'View Page Source' (or press Ctrl+U / Cmd+Option+U)",
+    "step3": "Copy all HTML content (Ctrl+A, Ctrl+C)",
+    "step4": "Paste it in the text area below",
+    "step5": "Click 'Parse HTML' to extract product information",
+    "placeholder": "Paste the complete JD product page HTML here...",
+    "parseButton": "Parse HTML",
+    "clear": "Clear",
+    "cancel": "Cancel",
+    "parseSuccess": "Successfully parsed product information!",
+    "parseError": "Could not find product information in HTML. Please make sure you copied the complete JD product page.",
+    "parseWarning": "Please paste HTML content first",
+    "importSuccess": "JD specifications imported successfully!",
+    "applyToForm": "Apply to Form",
+    "specifications": "Specifications"
   }
 }

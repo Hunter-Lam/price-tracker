@@ -6,7 +6,7 @@ import enUS from 'antd/locale/en_US';
 import dayjs from "dayjs";
 import { useTranslation } from 'react-i18next';
 import type { FormData, Product, ProductInput } from "./types";
-import { ProductForm, ProductTable, ColumnController, ThemeToggle, LanguageToggle, PriceHistoryChart, PasteParseModal } from "./components";
+import { ProductForm, ProductTable, ColumnController, ThemeToggle, LanguageToggle, PriceHistoryChart, PasteParseModal, JDSpecImporter } from "./components";
 import type { ColumnConfig } from "./components/ColumnController";
 import { useTheme } from "./contexts/ThemeContext";
 import { useLanguage } from "./contexts/LanguageContext";
@@ -339,6 +339,13 @@ const AppContent: React.FC = () => {
     }
   }, [form, message, t]);
 
+  const handleJDImport = useCallback((specification: string) => {
+    // Auto-fill specification field only
+    form.setFieldsValue({
+      specification: specification,
+    });
+  }, [form]);
+
   return (
     <div className="app-container" style={{ 
       minHeight: '100vh', 
@@ -392,6 +399,7 @@ const AppContent: React.FC = () => {
                   isEditing={editingProductId !== null}
                   onCancelEdit={handleCancelEdit}
                   onInsertAsNew={handleInsertAsNew}
+                  specImporterButton={<JDSpecImporter onImport={handleJDImport} />}
                 />
               </Card>
 

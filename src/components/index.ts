@@ -9,3 +9,4 @@ export { default as LanguageToggle } from "./LanguageToggle";
 export { default as PriceHistoryChart } from "./PriceHistoryChart";
 export { ProductForm } from "./ProductForm";
 export { PasteParseModal } from "./PasteParseModal";
+export { JDSpecImporter } from "./JDSpecImporter";
