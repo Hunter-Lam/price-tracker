@@ -27,7 +27,9 @@
       "Bash(node test_jd_spec_parser.js)",
       "Bash(node test_parser.js)",
       "Bash(node test_parser.cjs)",
-      "Bash(node test_taobao_parser.cjs)"
+      "Bash(node test_taobao_parser.cjs)",
+      "Bash(curl:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
