@@ -98,7 +98,7 @@ remember column controller settings $0.2876
 make specification collapsible $0.4071
 unit price $32.93
 parse specification from taobao product information $3.88 $6.97
-parse specification from JD product information
+parse specification from JD product information $26.78
 click to open a modal to show the whole specification $1.28 
 copy text: https://api.m.jd.com/?appid=pc-item-soa& $2.60
 specification template
