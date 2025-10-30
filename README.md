@@ -96,8 +96,8 @@ specification parse default order $4.01
 remember column controller settings $0.2876
 ~~don't restart on Windows~~ ✅ FIXED - Database moved to app data directory $0.64+$4.65+$2.87
 make specification collapsible $0.4071
-unit price $32.93
-parse specification from taobao product information $3.88 $6.97
+unit price $32.93 $5.74
+parse specification from taobao product information $3.88 $6.97 $2.27
 parse specification from JD product information $26.78
 click to open a modal to show the whole specification $1.28 
 copy text: https://api.m.jd.com/?appid=pc-item-soa& $2.60
