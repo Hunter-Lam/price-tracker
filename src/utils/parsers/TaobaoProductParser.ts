@@ -69,8 +69,8 @@ export class TaobaoProductParser implements IProductInfoParser {
         warnings.push('Brand not found in parameters');
       }
 
-      // Extract quantity and unit (from specs first, then from title)
-      let { quantity, unit } = this.extractQuantityAndUnit(specsMap);
+      // Extract quantity, unit, and comparisonUnit (from specs first, then from title)
+      let { quantity, unit, comparisonUnit } = this.extractQuantityAndUnit(specsMap);
 
       // If not found in specs, try extracting from title
       if (!quantity || !unit) {
@@ -78,9 +78,17 @@ export class TaobaoProductParser implements IProductInfoParser {
         if (titleResult.quantity && titleResult.unit) {
           quantity = titleResult.quantity;
           unit = titleResult.unit;
+          comparisonUnit = titleResult.comparisonUnit;
           // Clean the title by removing the quantity/unit pattern
           title = titleResult.cleanedTitle;
         }
+      }
+
+      // If still not found, set defaults: 1件
+      if (!quantity || !unit) {
+        quantity = 1;
+        unit = 'piece';
+        comparisonUnit = 'piece';
       }
 
       // Extract discounts
@@ -94,7 +102,8 @@ export class TaobaoProductParser implements IProductInfoParser {
         specification: specsString,
         date: dayjs(),
         quantity,
-        unit
+        unit,
+        comparisonUnit
       };
 
       if (discountInfo.length > 0) {
@@ -118,14 +127,21 @@ export class TaobaoProductParser implements IProductInfoParser {
    * Extract quantity and unit from title
    * Patterns: 1L, 500ml, 200g, 1L*1, 500ml*2, etc.
    * Returns cleaned title with quantity/unit pattern removed
+   * Also returns appropriate comparisonUnit
    */
-  private extractQuantityFromTitle(title: string): { quantity?: number; unit?: UnitType; cleanedTitle: string } {
+  private extractQuantityFromTitle(title: string): {
+    quantity?: number;
+    unit?: UnitType;
+    comparisonUnit?: UnitType;
+    cleanedTitle: string;
+  } {
     // Pattern: number + optional space + unit + optional multiplier (*number)
     // Examples: 1L, 500ml, 1L*1, 500ml*2, 200g, 200克
     const pattern = /(\d+\.?\d*)\s*(ml|l|g|kg|克|千克|斤|两|升|毫升|piece|個|个)(\*\d+)?/gi;
 
     let quantity: number | undefined;
     let unit: UnitType | undefined;
+    let comparisonUnit: UnitType | undefined;
     let cleanedTitle = title;
 
     const matches = Array.from(title.matchAll(pattern));
@@ -154,21 +170,28 @@ export class TaobaoProductParser implements IProductInfoParser {
       if (UNITS.includes(matchedUnit as UnitType)) {
         quantity = matchedQuantity;
         unit = matchedUnit as UnitType;
+        // Auto-set comparisonUnit: piece->piece, others->jin
+        comparisonUnit = unit === 'piece' ? 'piece' : 'jin';
 
         // Remove the matched pattern from title
         cleanedTitle = title.replace(match[0], '').trim();
       }
     }
 
-    return { quantity, unit, cleanedTitle };
+    return { quantity, unit, comparisonUnit, cleanedTitle };
   }
 
   /**
    * Extract quantity and unit from specs map
    * Priority order: 单件净含量 > 净含量 > 规格
    * Supports formats: 500ml, 750mL, 200g, 200克, etc.
+   * Also returns appropriate comparisonUnit
    */
-  private extractQuantityAndUnit(specsMap: Map<string, string>): { quantity?: number; unit?: UnitType } {
+  private extractQuantityAndUnit(specsMap: Map<string, string>): {
+    quantity?: number;
+    unit?: UnitType;
+    comparisonUnit?: UnitType;
+  } {
     // Priority fields to check
     const fields = ['单件净含量', '净含量', '规格'];
 
@@ -200,7 +223,9 @@ export class TaobaoProductParser implements IProductInfoParser {
         const unit = UNITS.includes(unitStr as UnitType) ? (unitStr as UnitType) : undefined;
 
         if (quantity > 0 && unit) {
-          return { quantity, unit };
+          // Auto-set comparisonUnit: piece->piece, others->jin
+          const comparisonUnit: UnitType = unit === 'piece' ? 'piece' : 'jin';
+          return { quantity, unit, comparisonUnit };
         }
       }
     }
@@ -380,19 +405,49 @@ export class TaobaoProductParser implements IProductInfoParser {
       return { specsMap: new Map(), specsString: '' };
     }
 
-    // Common parameter keys to help identify which line is the key
+    // Common parameter keys ordered by typical e-commerce usage frequency
+    // Priority: Basic info > Physical specs > Manufacturing info > Special attributes
     const commonKeys = [
-      '品牌', '产地', '型号', '规格', '颜色分类', '材质', '款式', '货号',
-      '大小', '适用年龄段', '功能', '包装规格',
-      '系列', '省份', '城市', '规格描述', '是否进口', '总净含量',
-      '生产许可证编号', '厂名', '厂址', '厂家联系方式', '配料表',
-      '保质期', '净含量', '成分', '特性', '用途', '特殊添加成分',
-      '适用对象', '流行元素', '风格', '元素年代', '套件种类',
-      '适用空间', '个数', '适用场景', '适用群体', '单件净含量',
-      '酒精度数', '香型', '包装方式', '售卖规格', '生产企业',
-      '贴膜特点', '贴膜工艺', '适用手机型号', '适用品牌',
-      '适用机型', '屏幕尺寸', '颜色', '容量', '版本', '套餐',
-      '尺码', '重量', '产品名称', '适用性别', '适用季节'
+      // Basic product identification (most common across all categories)
+      '品牌', '产地', '型号', '货号', '商品条形码',
+
+      // Physical specifications (very common)
+      '规格', '颜色分类', '颜色', '尺寸', '大小', '重量', '毛重',
+      '净含量', '单件净含量', '总净含量', '容量', '件数', '个数',
+
+      // Material and style (common)
+      '材质', '款式', '风格', '系列',
+
+      // Packaging (common)
+      '包装种类', '包装方式', '包装规格', '包装体积',
+
+      // Manufacturing and compliance (common for food/regulated products)
+      '厂名', '厂址', '厂家联系方式', '生产许可证编号', '生产企业',
+      '省份', '城市', '是否进口',
+
+      // Food-specific attributes
+      '配料表', '保质期', '成分', '特殊添加成分', '食品添加剂',
+      '酒精度数', '香型', '储藏方法', '产品标准号', '生产日期',
+
+      // Usage and targeting
+      '适用场景', '适用对象', '适用群体', '适用性别', '适用季节',
+      '适用年龄段', '适用空间', '用途', '功能', '特性',
+
+      // Electronics/tech specific
+      '适用手机型号', '适用品牌', '适用机型', '屏幕尺寸',
+      '贴膜特点', '贴膜工艺',
+
+      // Apparel/home goods specific
+      '尺码', '套件种类', '流行元素', '元素年代',
+
+      // Purchase options
+      '售卖规格', '版本', '套餐', '套餐类型',
+
+      // Product details
+      '规格描述', '产品名称', '主图来源',
+
+      // Category-specific attributes (less common, keep at end)
+      '保鲜膜类别', '耐热温度', '规格类型'
     ];
 
     // Detect format and format change point
@@ -401,15 +456,20 @@ export class TaobaoProductParser implements IProductInfoParser {
     // 2. All KEY-VALUE pairs
     // 3. VALUE-KEY pairs, then KEY-VALUE pairs (format switches once, never back)
     //
-    // Strategy: Find format change by detecting consecutive known keys
+    // Strategy: Find format change by detecting consecutive known keys where the second key has a value
     let formatChangeIndex = -1;
     for (let j = 0; j < paramLines.length - 1; j++) {
-      // Two consecutive known keys indicate format switch point
+      // Two consecutive known keys indicate potential format switch point
       // The first key is the last key in VALUE-KEY format
       // The second key is the first key in KEY-VALUE format
+      // BUT: verify the second key actually has a value (next line is not a key)
       if (commonKeys.includes(paramLines[j]) && commonKeys.includes(paramLines[j + 1])) {
-        formatChangeIndex = j + 1; // Format changes at the second key
-        break;
+        // Check if the second key has a value following it
+        const hasValue = j + 2 < paramLines.length && !commonKeys.includes(paramLines[j + 2]);
+        if (hasValue) {
+          formatChangeIndex = j + 1; // Format changes at the second key
+          break;
+        }
       }
     }
 
@@ -440,9 +500,19 @@ export class TaobaoProductParser implements IProductInfoParser {
     let i = 0;
     if (formatChangeIndex > 0) {
       while (i < formatChangeIndex) {
-        if (i + 1 < paramLines.length && commonKeys.includes(paramLines[i + 1])) {
+        const currentLine = paramLines[i];
+        const nextLine = i + 1 < paramLines.length ? paramLines[i + 1] : null;
+
+        // Check if current line is a key (orphaned key without value)
+        if (commonKeys.includes(currentLine)) {
+          // This is an orphaned key, skip it
+          i += 1;
+          continue;
+        }
+
+        if (nextLine && commonKeys.includes(nextLine)) {
           // VALUE-KEY format: value is on current line, key is on next line
-          specs.set(paramLines[i + 1], paramLines[i]);
+          specs.set(nextLine, currentLine);
           i += 2;
         } else {
           // Orphaned line, skip
