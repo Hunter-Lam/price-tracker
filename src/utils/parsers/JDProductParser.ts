@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import type { FormData, DiscountItem } from '../../types';
 import type { IProductInfoParser, ParseResult } from './types';
+import { UNITS, type UnitType } from '../../constants';
 
 interface JDProductInfo {
   price?: {
@@ -88,6 +89,27 @@ export class JDProductParser implements IProductInfoParser {
       const { title, brand, price, originalPrice, specification, address } =
         this.extractBasicInfo(json, warnings);
 
+      // Extract quantity, unit, and comparisonUnit (from specs first, then from title)
+      let { quantity, unit, comparisonUnit } = this.extractQuantityAndUnit(specification);
+
+      // If not found in specs, try extracting from title
+      if (!quantity || !unit) {
+        const titleResult = this.extractQuantityFromTitle(title);
+        if (titleResult.quantity && titleResult.unit) {
+          quantity = titleResult.quantity;
+          unit = titleResult.unit;
+          comparisonUnit = titleResult.comparisonUnit;
+          // Note: We don't clean the title for JD as it's already well-formatted
+        }
+      }
+
+      // If still not found, set defaults: 1件
+      if (!quantity || !unit) {
+        quantity = 1;
+        unit = 'piece';
+        comparisonUnit = 'piece';
+      }
+
       // Extract discount information
       const discountInfo = this.extractDiscounts(json, price, originalPrice);
 
@@ -98,6 +120,9 @@ export class JDProductParser implements IProductInfoParser {
         originalPrice,
         specification,
         date: dayjs(),
+        quantity,
+        unit,
+        comparisonUnit,
         source: {
           type: 'URL',
           address
@@ -119,6 +144,118 @@ export class JDProductParser implements IProductInfoParser {
         error: error instanceof Error ? error.message : 'Unknown parsing error'
       };
     }
+  }
+
+  /**
+   * Extract quantity and unit from title
+   * Patterns: 1L, 500ml, 200g, 1L*1, 500ml*2, etc.
+   * Returns cleaned title with quantity/unit pattern removed
+   * Also returns appropriate comparisonUnit
+   */
+  private extractQuantityFromTitle(title: string): {
+    quantity?: number;
+    unit?: UnitType;
+    comparisonUnit?: UnitType;
+    cleanedTitle: string;
+  } {
+    // Pattern: number + optional space + unit + optional multiplier (*number)
+    // Examples: 1L, 500ml, 1L*1, 500ml*2, 200g, 200克
+    const pattern = /(\d+\.?\d*)\s*(ml|l|g|kg|克|千克|斤|两|升|毫升|piece|個|个)(\*\d+)?/gi;
+
+    let quantity: number | undefined;
+    let unit: UnitType | undefined;
+    let comparisonUnit: UnitType | undefined;
+    let cleanedTitle = title;
+
+    const matches = Array.from(title.matchAll(pattern));
+
+    if (matches.length > 0) {
+      // Use the last match (often the most relevant)
+      const match = matches[matches.length - 1];
+      const matchedQuantity = parseFloat(match[1]);
+      let matchedUnit = match[2].toLowerCase();
+
+      // Normalize Chinese units to English keys
+      const unitMap: Record<string, string> = {
+        '克': 'g',
+        '千克': 'kg',
+        '斤': 'jin',
+        '两': 'liang',
+        '升': 'l',
+        '毫升': 'ml',
+        '個': 'piece',
+        '个': 'piece'
+      };
+
+      matchedUnit = unitMap[matchedUnit] || matchedUnit;
+
+      // Validate unit is a valid UnitType
+      if (UNITS.includes(matchedUnit as UnitType)) {
+        quantity = matchedQuantity;
+        unit = matchedUnit as UnitType;
+        // Auto-set comparisonUnit: piece->piece, others->jin
+        comparisonUnit = unit === 'piece' ? 'piece' : 'jin';
+
+        // Remove the matched pattern from title
+        cleanedTitle = title.replace(match[0], '').trim();
+      }
+    }
+
+    return { quantity, unit, comparisonUnit, cleanedTitle };
+  }
+
+  /**
+   * Extract quantity and unit from specifications
+   * JD specifications are in sale_attributes JSON format
+   * Also returns appropriate comparisonUnit
+   */
+  private extractQuantityAndUnit(specsString: string): {
+    quantity?: number;
+    unit?: UnitType;
+    comparisonUnit?: UnitType;
+  } {
+    // Common field names that might contain quantity/unit info
+    const quantityFields = ['净含量', '规格', '容量', '重量'];
+
+    for (const field of quantityFields) {
+      // Match pattern like "净含量: 500ml" or "规格: 200g"
+      const fieldMatch = specsString.match(new RegExp(`${field}:\\s*([^\\n]+)`, 'i'));
+      if (!fieldMatch) continue;
+
+      const value = fieldMatch[1].trim();
+
+      // Match patterns like: 500ml, 750mL, 200g, 200克, 1.5L, 1.5升
+      const match = value.match(/^(\d+\.?\d*)\s*(ml|l|g|kg|克|千克|斤|两|升|毫升|piece|個|个)?$/i);
+      if (match) {
+        const quantity = parseFloat(match[1]);
+        let unitStr = match[2]?.toLowerCase() || '';
+
+        // Normalize Chinese units to English keys
+        const unitMap: Record<string, string> = {
+          '克': 'g',
+          '千克': 'kg',
+          '斤': 'jin',
+          '两': 'liang',
+          '升': 'l',
+          '毫升': 'ml',
+          '個': 'piece',
+          '个': 'piece'
+        };
+
+        unitStr = unitMap[unitStr] || unitStr;
+
+        // Validate unit is a valid UnitType
+        const unit = UNITS.includes(unitStr as UnitType) ? (unitStr as UnitType) : undefined;
+
+        if (quantity > 0 && unit) {
+          // Auto-set comparisonUnit: piece->piece, others->jin
+          const comparisonUnit: UnitType = unit === 'piece' ? 'piece' : 'jin';
+          return { quantity, unit, comparisonUnit };
+        }
+      }
+    }
+
+    return {};
   }
 
   /**
