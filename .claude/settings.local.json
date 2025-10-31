@@ -29,7 +29,11 @@
       "Bash(node test_parser.cjs)",
       "Bash(node test_taobao_parser.cjs)",
       "Bash(curl:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(yarn dev)",
+      "Bash(yarn add -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom happy-dom)",
+      "Bash(yarn add:*)",
+      "Bash(yarn test:run)"
     ],
     "deny": [],
     "ask": []
