@@ -1,260 +1,207 @@
-# Price Tracker - Project Overview
+# CLAUDE.md
 
-A desktop application built with Tauri, React, and TypeScript for tracking product prices across different e-commerce platforms. The app allows users to monitor price history, manage product information, and analyze discount trends.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+# Price Tracker - E-commerce Price Tracking Desktop App
+
+A Tauri 2 + React + TypeScript desktop application for tracking product prices from Chinese e-commerce platforms (JD.com, Taobao, Tmall). Features automated product information parsing, price history visualization, and discount calculation.
 
 ## Tech Stack
 
-### Frontend
-- **React 18** with TypeScript
-- **Ant Design (antd)** - UI component library
-- **Vite** - Build tool and dev server
-- **Recharts** - Data visualization for price history charts
-- **i18next** - Internationalization (supports English and Chinese)
-- **dayjs** - Date manipulation
-- **Tailwind CSS** - Styling
+- **Frontend**: React 18, TypeScript, Ant Design, Vite, Recharts, i18next, Tailwind CSS
+- **Backend**: Tauri 2, Rust, SQLite (rusqlite)
+- **Key Libraries**: dayjs (date handling), @tauri-apps/api (Tauri integration)
 
-### Backend
-- **Tauri 2** - Desktop app framework
-- **Rust** - Backend logic
-- **SQLite (rusqlite)** - Local database for data persistence
+## Common Commands
 
-## Project Structure
+**Note**: This project uses **yarn** as the recommended package manager.
 
-```
-price-tracker/
-├── src/                          # Frontend React source
-│   ├── components/               # React components
-│   │   ├── ProductForm.tsx       # Add/Edit product form
-│   │   ├── ProductTable.tsx      # Product listing table
-│   │   ├── PriceHistoryChart.tsx # Price history visualization
-│   │   ├── ColumnController.tsx  # Table column visibility control
-│   │   ├── DiscountParser.tsx    # Discount calculation logic
-│   │   ├── DiscountInput.tsx     # Discount input fields
-│   │   ├── DiscountSection.tsx   # Discount display section
-│   │   ├── SourceInput.tsx       # Product source (URL/store) input
-│   │   ├── ThemeToggle.tsx       # Dark/light mode toggle
-│   │   └── LanguageToggle.tsx    # Language switcher
-│   ├── contexts/                 # React contexts
-│   │   ├── ThemeContext.tsx      # Theme management
-│   │   └── LanguageContext.tsx   # Language management
-│   ├── hooks/                    # Custom React hooks
-│   │   └── useDocumentTitle.ts   # Dynamic document title
-│   ├── utils/                    # Utility functions
-│   │   ├── storage.ts            # Database abstraction layer
-│   │   ├── urlParser.ts          # URL parsing for e-commerce sites
-│   │   ├── urlFormatter.ts       # URL formatting
-│   │   ├── csvExport.ts          # Export to CSV
-│   │   ├── csvImport.ts          # Import from CSV/Excel
-│   │   └── openUrl.ts            # Open URLs in browser
-│   ├── types/                    # TypeScript type definitions
-│   ├── constants/                # Application constants
-│   ├── i18n/                     # Internationalization configs
-│   └── App.tsx                   # Main application component
-├── src-tauri/                    # Tauri/Rust backend
-│   ├── src/
-│   │   ├── lib.rs                # Database operations and Tauri commands
-│   │   └── main.rs               # Application entry point
-│   ├── Cargo.toml                # Rust dependencies
-│   └── products.db               # SQLite database (generated at runtime)
-└── package.json                  # Node dependencies
+### Development
+```bash
+yarn dev                 # Start Vite dev server (browser mode with localStorage)
+yarn tauri dev           # Start Tauri desktop app (uses SQLite database)
 ```
 
-## Core Features
+### Building
+```bash
+yarn build               # Build frontend (includes TypeScript compilation)
+yarn tauri build         # Build Tauri desktop app for production
+```
 
-### 1. Product Management
-- Add/edit/delete products with detailed information
-- Fields: title, brand, type, price, original price, discount details, specification, date, remarks
-- Support for both URL sources (e-commerce links) and physical store addresses
-- Edit existing records or insert as new entries
+### Testing Parsers
+```bash
+node test_parser.cjs           # Test JD product parser
+node test_taobao_parser.cjs    # Test Taobao product parser
+```
 
-### 2. Price Tracking
-- Visual price history chart using Recharts
-- Track price changes over time
-- Display percentage paid vs original price
-- Reference lines for affordable price targets
+## Architecture
 
-### 3. Discount Management
-- Complex discount calculation system
-- Support for multiple discount types:
-  - Percentage discounts
-  - Fixed amount reductions
-  - Coupon codes
-  - Store promotions
-- Discount parser for automatic calculation
+### Dual Storage Strategy
+The app uses **storage.ts** as a unified abstraction layer:
+- **Tauri environment** (`window.isTauri` === true): Uses SQLite via Rust commands
+- **Browser environment**: Falls back to localStorage for development
 
-### 4. Data Import/Export
-- CSV export functionality
-- Excel import support (with encoding handling for UTF-8)
-- Bulk product import
+All data operations (CRUD) go through `src/utils/storage.ts`, which automatically detects the environment and routes to the appropriate backend.
 
-### 5. Customization
-- Column visibility controller for the product table
-- Dark/light theme toggle
-- Bilingual support (English/Chinese)
-- Responsive layout
+### Product Information Parsers (Strategy Pattern)
+Located in `src/utils/parsers/`, this system parses product info from pasted text:
 
-## Database Schema
+- **ParserManager**: Manages all parsers, tries them in sequence
+- **JDProductParser**: Parses JD.com JSON product data (price, discounts, specifications)
+- **TaobaoProductParser**: Parses Taobao/Tmall plain text format
+- **PlainTextParser**: Generic fallback parser
 
+**To add a new parser:**
+1. Implement `IProductInfoParser` interface in `src/utils/parsers/types.ts`
+2. Register in `ParserManager` constructor (order matters - specific before generic)
+
+### Rust Backend Commands
+Defined in `src-tauri/src/lib.rs`:
+- `save_product` - Insert new product
+- `update_product` - Update existing product
+- `delete_product` - Remove product
+- `get_products` - Fetch all products (ordered by created_at DESC)
+- `get_database_path` - Get SQLite database file location
+
+### Database Schema
 ```sql
 CREATE TABLE products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     address TEXT NOT NULL,           -- URL or store address
-    title TEXT NOT NULL,              -- Product name
-    brand TEXT NOT NULL,              -- Brand name
-    type TEXT NOT NULL,               -- Product category
-    price REAL NOT NULL,              -- Current price
-    original_price REAL,              -- Original price
-    discount TEXT,                    -- JSON string of discount details
-    specification TEXT,               -- Product specs
-    date TEXT NOT NULL,               -- Price snapshot date
-    remark TEXT,                      -- Additional notes
+    title TEXT NOT NULL,
+    brand TEXT NOT NULL,
+    type TEXT NOT NULL,
+    price REAL NOT NULL,
+    original_price REAL,
+    discount TEXT,                   -- JSON string of DiscountItem[]
+    specification TEXT,
+    date TEXT NOT NULL,              -- YYYY-MM-DD format
+    remark TEXT,
+    quantity REAL,
+    unit TEXT,
+    unit_price REAL,
+    comparison_unit TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 ```
 
-## Key Components
+### State Management
+- **React Context**: Theme (dark/light) and language (en/zh) - see `src/contexts/`
+- **Local state**: Product data, form state managed in `App.tsx`
+- **Column visibility**: Persisted to localStorage separately from product data
 
-### App.tsx
-Main application component that orchestrates all functionality:
-- Product state management
-- Form handling for add/edit operations
-- Column visibility configuration
-- Integration with storage layer
+### Key Data Flow
+1. User pastes product info → `PasteParseModal` → `ParserManager.parse()`
+2. Parser extracts data → Populates form fields in `ProductForm`
+3. User submits → `App.tsx` → `storage.ts` → Tauri command or localStorage
+4. Products loaded → `ProductTable` displays with `ColumnController` for visibility
+5. Price history → `PriceHistoryChart` filters by product and date range
 
-### storage.ts
-Unified storage abstraction that works in both browser and Tauri environments:
-- Tauri environment: SQLite database via Rust commands
-- Browser environment: localStorage fallback
-- Operations: save, update, delete, get, import products
+## Component Organization
 
-### lib.rs (Tauri Backend)
-Rust-based backend with Tauri commands:
-- `save_product` - Insert new product
-- `update_product` - Update existing product
-- `delete_product` - Remove product
-- `get_products` - Fetch all products
-- `get_database_path` - Get database location
+### Main Components
+- **App.tsx**: Root component, orchestrates all features, manages product state
+- **ProductForm.tsx**: Add/edit product form with discount inputs, unit price calculations
+- **ProductTable.tsx**: Product listing with editable rows, delete actions, URL opening
+- **PriceHistoryChart.tsx**: Recharts-based price visualization with date filtering
+- **ColumnController.tsx**: Toggle table column visibility (settings saved to localStorage)
 
-## Development Workflow
+### Feature Components
+- **PasteParseModal.tsx**: Modal for pasting and parsing product info
+- **JDSpecImporter.tsx**: Import JD product specifications
+- **DiscountParser.tsx**: Parse discount text into structured DiscountItem[]
+- **DiscountInput.tsx**: Input fields for individual discount items
+- **UnitPriceInput.tsx**: Calculate unit price from quantity and price
 
-### Running in Development
-```bash
-npm run dev              # Start Vite dev server
-npm run tauri dev        # Start Tauri app with hot reload
-```
+### Utilities
+- **urlParser.ts**: Extract product IDs from JD/Taobao/Tmall URLs
+- **csvExport.ts**: Export products to CSV
+- **csvImport.ts**: Import products from CSV/Excel (handles UTF-8 encoding)
+- **unitConversion.ts**: Convert between different units (g, kg, ml, L, etc.)
 
-### Building for Production
-```bash
-npm run build            # Build frontend
-npm run tauri build      # Build Tauri desktop app
-```
+## Supported E-commerce Platforms
 
-### Type Checking
-```bash
-npm run build            # Includes TypeScript compilation (tsc)
-```
+### JD.com (京东)
+- Parses JSON format from JD product pages
+- Extracts: price, original price, discounts (coupons, promotions, government subsidies), brand, specifications
+- URL format: `https://item.jd.com/{product_id}.html`
 
-## Environment Detection
+### Taobao/Tmall (淘宝/天猫)
+- Parses plain text format
+- Extracts: price, discounts, brand from parameter info section
+- Identifies by keywords: "参数信息", "优惠前", "券后"
 
-The app automatically detects whether it's running in:
-- **Tauri environment**: Uses SQLite database via Rust backend
-- **Browser environment**: Uses localStorage for data persistence
+## Important Implementation Details
 
-Check via: `storage.isTauriEnvironment()`
-
-## Data Formats
-
-### Product Type
-```typescript
-interface Product {
-  id?: number;
-  address: string;
-  title: string;
-  brand: string;
-  type: CategoryType;
-  price: number;
-  originalPrice?: number;
-  discount?: string;          // JSON string
-  specification?: string;
-  date: string;              // YYYY-MM-DD format
-  remark?: string;
-  created_at?: string;
-}
-```
-
-### Discount Item
+### Discount System
+Discounts are stored as JSON string of `DiscountItem[]`:
 ```typescript
 interface DiscountItem {
-  discountOwner: DiscountOrganizerType;   // Store, platform, etc.
-  discountType: DiscountMethodType;       // Percentage, fixed, etc.
+  discountOwner: DiscountOrganizerType;  // 'store' | 'platform' | 'government'
+  discountType: DiscountMethodType;       // 'percentage' | 'fixed' | 'coupon'
   discountValue: string | number;
 }
 ```
 
-## Supported E-commerce Platforms
+The `DiscountParser` component calculates `originalPrice` from `price` + discounts.
 
-The URL parser supports extracting product IDs from:
-- JD.com (京东)
-- Taobao (淘宝)
-- Tmall (天猫)
-- Generic URLs
+### Unit Price Calculation
+Products can have quantity/unit (e.g., "500g") and a comparison unit (e.g., "500g"). The `unitPrice` is auto-calculated and displayed for price comparison.
 
-## Known Issues & TODOs
+### Internationalization
+- i18next with English and Chinese translations in `src/i18n/`
+- Ant Design locale switches automatically via `ConfigProvider`
+- Document title updates via `useDocumentTitle` hook
 
-See [README.md](README.md) for the current TODO list, which includes:
-- Dark mode improvements
-- Page width optimization
-- Enhanced discount parsing
-- Additional e-commerce platform support
+### Theme Management
+- Dark/light mode via `ThemeContext` and Ant Design's ConfigProvider
+- Theme persisted to localStorage
 
-## Installation Prerequisites
+## Prerequisites
 
-### Rust
+### Node.js and Yarn
+1. Install Node.js LTS version (18+ recommended) from [nodejs.org](https://nodejs.org/)
+2. Install Yarn package manager:
+```bash
+npm install -g yarn
+# or via Homebrew on macOS
+brew install yarn
+```
+
+3. Install project dependencies:
+```bash
+yarn install
+```
+
+### Rust Installation
 Required for Tauri development:
 ```bash
 curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 # Select option 1 for standard installation
 ```
 
-After installation, add Cargo to PATH:
+After installation:
 ```bash
-. "$HOME/.cargo/env"
+. "$HOME/.cargo/env"  # Add Cargo to PATH
 ```
 
-### Node.js
-Required for frontend development (use a recent LTS version)
+## Database Location
 
-## Important Files
+- **Development**: Current working directory (`./products.db`)
+- **Production**: Retrieved via `get_database_path` Tauri command
 
-- [package.json](package.json) - Node dependencies and scripts
-- [src-tauri/Cargo.toml](src-tauri/Cargo.toml) - Rust dependencies
-- [src/App.tsx](src/App.tsx) - Main React component
-- [src-tauri/src/lib.rs](src-tauri/src/lib.rs) - Rust backend logic
-- [src/utils/storage.ts](src/utils/storage.ts) - Data persistence layer
+The database file is tracked in git but may contain local data.
 
-## Git Workflow
+## Adding New Product Parsers
 
-Current branch: `main`
-Database file (`src-tauri/products.db`) is tracked in git but may contain local data.
+1. Create new parser class in `src/utils/parsers/` implementing `IProductInfoParser`
+2. Implement `canParse(text: string): boolean` - return true if text matches your format
+3. Implement `parse(text: string): ParseResult` - extract product data
+4. Register in `ParserManager` constructor (specific parsers before generic ones)
+5. Test with a standalone script (see `test_parser.cjs` as example)
 
-## Architecture Notes
+## Testing Notes
 
-### Storage Strategy
-The application uses a dual-storage strategy:
-1. **Production (Tauri)**: SQLite database managed by Rust backend
-2. **Development (Browser)**: localStorage fallback for quick testing
-
-### State Management
-- React Context API for theme and language
-- Local component state for form and product data
-- No external state management library (Redux, MobX, etc.)
-
-### Styling Approach
-- Ant Design components for UI consistency
-- Tailwind CSS for custom styling
-- Theme support via Ant Design's ConfigProvider
-
-### Internationalization
-- i18next for translation management
-- Separate translation files for English and Chinese
-- Dynamic locale switching for Ant Design components
+- Use `yarn dev` for quick frontend testing (uses localStorage, no Tauri needed)
+- Use `yarn tauri dev` for full integration testing with SQLite
+- Parser test scripts are CommonJS files for easy Node.js execution
