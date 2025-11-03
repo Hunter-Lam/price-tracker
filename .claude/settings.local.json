@@ -33,7 +33,9 @@
       "Bash(yarn dev)",
       "Bash(yarn add -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom happy-dom)",
       "Bash(yarn add:*)",
-      "Bash(yarn test:run)"
+      "Bash(yarn test:run)",
+      "WebFetch(domain:v2.tauri.app)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
