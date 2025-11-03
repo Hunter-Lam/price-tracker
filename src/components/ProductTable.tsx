@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Table, TableColumnsType, Typography, Tag, Space, Button, Popconfirm, Row, Col, App, Modal, Upload, Alert, Divider } from "antd";
+import { Table, TableColumnsType, Typography, Space, Button, Popconfirm, Row, Col, App, Modal, Upload, Alert, Divider } from "antd";
 import { LinkOutlined, DeleteOutlined, DownloadOutlined, UploadOutlined, InfoCircleOutlined, EditOutlined, EnvironmentOutlined, CopyOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -198,7 +198,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       onFilter: (value, record) => record.brand === value,
       sorter: (a, b) => a.brand.localeCompare(b.brand),
       render: (brand: string) => (
-        <Tag color="blue">{brand}</Tag>
+        <Typography.Text>{brand}</Typography.Text>
       ),
     },
     {
@@ -210,7 +210,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       onFilter: (value, record) => record.type === value,
       sorter: (a, b) => a.type.localeCompare(b.type),
       render: (type: string) => (
-        <Tag color="green">{type}</Tag>
+        <Typography.Text>{type}</Typography.Text>
       ),
     },
     {
