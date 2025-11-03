@@ -22,6 +22,11 @@
       "csp": null
     }
   },
+  "plugins": {
+    "database": {
+      "path": "products.db"
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",

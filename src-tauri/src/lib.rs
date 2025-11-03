@@ -1,8 +1,19 @@
 use rusqlite::{Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
-use tauri::{State, Manager};
+use tauri::{State, Manager, AppHandle};
 use std::env;
+use std::path::PathBuf;
+
+#[derive(Debug, Deserialize)]
+struct DatabaseConfig {
+    path: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct PluginsConfig {
+    database: DatabaseConfig,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Product {
@@ -50,20 +61,20 @@ pub struct ProductInput {
 
 pub struct DatabaseState {
     pub conn: Mutex<Connection>,
+    pub db_path: Mutex<PathBuf>,
 }
 
 impl DatabaseState {
-    pub fn new() -> Result<Self> {
-        // Get the current working directory
-        let current_dir = env::current_dir()
-            .expect("Failed to get current working directory");
-        
-        // Create the database path in the current working directory
-        let db_path = current_dir.join("products.db");
-        
+    pub fn new(db_path: PathBuf) -> Result<Self> {
         println!("Database path: {:?}", db_path);
-        
-        let conn = Connection::open(db_path)?;
+
+        // Ensure parent directory exists
+        if let Some(parent) = db_path.parent() {
+            std::fs::create_dir_all(parent)
+                .expect("Failed to create database directory");
+        }
+
+        let conn = Connection::open(&db_path)?;
         
         // Create table if it doesn't exist
         conn.execute(
@@ -101,7 +112,85 @@ impl DatabaseState {
 
         Ok(DatabaseState {
             conn: Mutex::new(conn),
+            db_path: Mutex::new(db_path),
         })
+    }
+
+    pub fn get_default_db_path(app_handle: &AppHandle) -> PathBuf {
+        // Try to read custom path from config first
+        let config = app_handle.config();
+        if let Ok(plugins_config) = serde_json::from_value::<PluginsConfig>(
+            serde_json::to_value(&config.plugins).unwrap_or_default()
+        ) {
+            if !plugins_config.database.path.is_empty() {
+                let custom_path = PathBuf::from(&plugins_config.database.path);
+                println!("Using custom database path from config: {:?}", custom_path);
+                return custom_path;
+            }
+        }
+
+        // Try to use app data directory (recommended for production)
+        if let Ok(app_data_dir) = app_handle.path().app_data_dir() {
+            println!("Using app data directory: {:?}", app_data_dir);
+            app_data_dir.join("products.db")
+        } else {
+            // Fallback to current working directory
+            let cwd = env::current_dir()
+                .expect("Failed to get current working directory")
+                .join("products.db");
+            println!("Using current working directory: {:?}", cwd);
+            cwd
+        }
+    }
+
+    pub fn reconnect(&self, new_db_path: PathBuf) -> Result<()> {
+        println!("Reconnecting to database: {:?}", new_db_path);
+
+        // Ensure parent directory exists
+        if let Some(parent) = new_db_path.parent() {
+            std::fs::create_dir_all(parent)
+                .expect("Failed to create database directory");
+        }
+
+        let new_conn = Connection::open(&new_db_path)?;
+
+        // Create table if it doesn't exist
+        new_conn.execute(
+            "CREATE TABLE IF NOT EXISTS products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                address TEXT NOT NULL,
+                title TEXT NOT NULL,
+                brand TEXT NOT NULL,
+                type TEXT NOT NULL,
+                price REAL NOT NULL,
+                original_price REAL,
+                discount TEXT,
+                specification TEXT,
+                date TEXT NOT NULL,
+                remark TEXT,
+                quantity REAL,
+                unit TEXT,
+                unit_price REAL,
+                comparison_unit TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )",
+            [],
+        )?;
+
+        // Add new columns to existing table if they don't exist
+        let _ = new_conn.execute("ALTER TABLE products ADD COLUMN original_price REAL", []);
+        let _ = new_conn.execute("ALTER TABLE products ADD COLUMN discount TEXT", []);
+        let _ = new_conn.execute("ALTER TABLE products ADD COLUMN quantity REAL", []);
+        let _ = new_conn.execute("ALTER TABLE products ADD COLUMN unit TEXT", []);
+        let _ = new_conn.execute("ALTER TABLE products ADD COLUMN unit_price REAL", []);
+        let _ = new_conn.execute("ALTER TABLE products ADD COLUMN comparison_unit TEXT", []);
+        let _ = new_conn.execute("ALTER TABLE products RENAME COLUMN url TO address", []);
+
+        // Update both connection and path
+        *self.conn.lock().unwrap() = new_conn;
+        *self.db_path.lock().unwrap() = new_db_path;
+
+        Ok(())
     }
 }
 
@@ -289,12 +378,22 @@ async fn delete_product(id: i64, state: State<'_, DatabaseState>) -> Result<(), 
 }
 
 #[tauri::command]
-async fn get_database_path() -> Result<String, String> {
-    let current_dir = env::current_dir()
-        .map_err(|e| e.to_string())?;
-    
-    let db_path = current_dir.join("products.db");
+async fn get_database_path(state: State<'_, DatabaseState>) -> Result<String, String> {
+    let db_path = state.db_path.lock().map_err(|e| e.to_string())?;
     Ok(db_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+async fn set_database_path(
+    new_path: String,
+    state: State<'_, DatabaseState>,
+) -> Result<String, String> {
+    let new_db_path = PathBuf::from(&new_path);
+
+    state.reconnect(new_db_path.clone())
+        .map_err(|e| format!("Failed to reconnect to database: {}", e))?;
+
+    Ok(new_db_path.to_string_lossy().to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -302,7 +401,8 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let db_state = DatabaseState::new()
+            let db_path = DatabaseState::get_default_db_path(app.handle());
+            let db_state = DatabaseState::new(db_path)
                 .expect("Failed to initialize database");
             app.manage(db_state);
             Ok(())
@@ -313,7 +413,8 @@ pub fn run() {
             update_product,
             get_products,
             delete_product,
-            get_database_path
+            get_database_path,
+            set_database_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
