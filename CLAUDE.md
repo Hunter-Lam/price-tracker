@@ -71,7 +71,8 @@ Defined in `src-tauri/src/lib.rs`:
 - `update_product` - Update existing product
 - `delete_product` - Remove product
 - `get_products` - Fetch all products (ordered by created_at DESC)
-- `get_database_path` - Get SQLite database file location
+- `get_database_path` - Get current SQLite database file location
+- `set_database_path` - Set a new database path and reconnect
 
 ### Database Schema
 ```sql
@@ -200,8 +201,54 @@ After installation:
 
 ## Database Location
 
-- **Development**: Current working directory (`./products.db`)
-- **Production**: Retrieved via `get_database_path` Tauri command
+The database path is **fully configurable** through both configuration file and runtime commands.
+
+### Configuration Methods
+
+#### 1. Configuration File (Recommended for Permanent Setup)
+Edit `src-tauri/tauri.conf.json`:
+```json
+{
+  "plugins": {
+    "database": {
+      "path": "/path/to/your/products.db"
+    }
+  }
+}
+```
+Leave the `path` empty (`""`) to use the default location.
+
+#### 2. Runtime API (For Dynamic Changes)
+
+**Get current database path:**
+```typescript
+import { invoke } from '@tauri-apps/api/core';
+const dbPath = await invoke<string>('get_database_path');
+```
+
+**Set a new database path:**
+```typescript
+import { invoke } from '@tauri-apps/api/core';
+const newPath = '/path/to/your/products.db';
+await invoke<string>('set_database_path', { newPath });
+// Database automatically reconnects to new location
+```
+
+### Default Locations (Priority Order)
+
+1. **Custom path in config** (`plugins.database.path` in `tauri.conf.json`) - if set
+2. **App data directory** (platform-specific, recommended for production):
+   - macOS: `~/Library/Application Support/com.md-react.app/products.db`
+   - Windows: `%APPDATA%\com.md-react.app\products.db`
+   - Linux: `~/.local/share/com.md-react.app/products.db`
+3. **Fallback**: Current working directory (`./products.db`) if app data dir is unavailable
+
+### Features
+- Automatically creates parent directories if they don't exist
+- Reconnects to the new database location immediately (when using `set_database_path`)
+- Creates necessary tables in the new database if they don't exist
+- Preserves existing database structure and data at the configured location
+- Config file path takes precedence over default locations
 
 The database file is tracked in git but may contain local data.
 
