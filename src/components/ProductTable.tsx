@@ -26,6 +26,18 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
   const { message } = App.useApp();
   const { t } = useTranslation();
 
+  // Page size state with localStorage persistence
+  const [pageSize, setPageSize] = useState<number>(() => {
+    const saved = localStorage.getItem('productTablePageSize');
+    return saved ? parseInt(saved, 20) : 20;
+  });
+
+  // Save page size to localStorage when it changes
+  const handlePageSizeChange = (current: number, size: number) => {
+    setPageSize(size);
+    localStorage.setItem('productTablePageSize', size.toString());
+  };
+
   // Function to check if an address is a URL
   const isUrl = (address: string): boolean => {
     if (!address) return false;
@@ -516,11 +528,13 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
         dataSource={data}
         rowKey={(record) => record.id?.toString() || record.address}
         pagination={{
+          pageSize,
           showSizeChanger: true,
           showQuickJumper: true,
           responsive: true,
           showTotal: (total, range) =>
             t('table.paginationTotal', { start: range[0], end: range[1], total }),
+          onShowSizeChange: handlePageSizeChange,
         }}
         scroll={{ x: 1385 }}
         size="middle"
