@@ -30,7 +30,7 @@ html[data-theme="light"] .app-container {
 .container {
   width: 100%;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 24px;
 }
 
 /* Form enhancements */
@@ -55,8 +55,26 @@ html[data-theme="light"] .app-container {
 }
 
 /* Responsive design */
+@media (min-width: 1920px) {
+  .container {
+    padding: 0 48px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
-    padding: 0 0.5rem;
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 0 8px;
   }
 }

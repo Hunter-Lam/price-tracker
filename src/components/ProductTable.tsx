@@ -170,7 +170,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.id'),
       dataIndex: "id",
       key: "id",
-      width: 50,
+      width: '4%',
+      minWidth: 60,
       render: (id: number) => (
         <Typography.Text type="secondary">#{id}</Typography.Text>
       ),
@@ -179,8 +180,11 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.title'),
       dataIndex: "title",
       key: "title",
-      width: 180,
-      ellipsis: true,
+      width: '20%',
+      minWidth: 200,
+      ellipsis: {
+        showTitle: true,
+      },
       filters: filterOptions.titles,
       onFilter: (value, record) => record.title === value,
       filterSearch: true,
@@ -193,7 +197,9 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.brand'),
       dataIndex: "brand",
       key: "brand",
-      width: 100,
+      width: '8%',
+      minWidth: 100,
+      ellipsis: true,
       filters: filterOptions.brands,
       onFilter: (value, record) => record.brand === value,
       sorter: (a, b) => a.brand.localeCompare(b.brand),
@@ -205,7 +211,9 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.type'),
       dataIndex: "type",
       key: "type",
-      width: 90,
+      width: '7%',
+      minWidth: 90,
+      ellipsis: true,
       filters: filterOptions.types,
       onFilter: (value, record) => record.type === value,
       sorter: (a, b) => a.type.localeCompare(b.type),
@@ -217,7 +225,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.originalPrice'),
       dataIndex: "originalPrice",
       key: "originalPrice",
-      width: 85,
+      width: '7%',
+      minWidth: 100,
       align: 'right',
       sorter: (a, b) => (a.originalPrice || 0) - (b.originalPrice || 0),
       render: (originalPrice: number) => (
@@ -232,7 +241,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.price'),
       dataIndex: "price",
       key: "price",
-      width: 85,
+      width: '7%',
+      minWidth: 100,
       align: 'right',
       sorter: (a, b) => a.price - b.price,
       render: (price: number, record: Product) => {
@@ -259,7 +269,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
     {
       title: t('table.unitPrice'),
       key: "unitPrice",
-      width: 110,
+      width: '9%',
+      minWidth: 120,
       align: 'right',
       sorter: (a, b) => {
         const unitPriceA = a.unitPrice || 0;
@@ -329,7 +340,9 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.discount'),
       dataIndex: "discount",
       key: "discount",
-      width: 160,
+      width: '12%',
+      minWidth: 150,
+      ellipsis: true,
       render: (discount: string) => {
         if (!discount) return '-';
         try {
@@ -352,7 +365,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.specification'),
       dataIndex: "specification",
       key: "specification",
-      width: 140,
+      width: '10%',
+      minWidth: 140,
       render: (specification: string) => {
         if (!specification) return '-';
         return (
@@ -378,7 +392,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.date'),
       dataIndex: "date",
       key: "date",
-      width: 105,
+      width: '7%',
+      minWidth: 110,
       sorter: (a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf(),
       render: (date: string) => (
         <Typography.Text>
@@ -390,7 +405,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.remark'),
       dataIndex: "remark",
       key: "remark",
-      width: 140,
+      width: '10%',
+      minWidth: 140,
       render: (remark: string) => (
         <Paragraph
           type="secondary"
@@ -409,7 +425,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
       title: t('table.createdAt'),
       dataIndex: "created_at",
       key: "created_at",
-      width: 130,
+      width: '9%',
+      minWidth: 150,
       sorter: (a, b) => dayjs(a.created_at).valueOf() - dayjs(b.created_at).valueOf(),
       render: (created_at: string) => (
         <Typography.Text type="secondary">
@@ -536,7 +553,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ data = [], onDelete, onEdit
             t('table.paginationTotal', { start: range[0], end: range[1], total }),
           onShowSizeChange: handlePageSizeChange,
         }}
-        scroll={{ x: 1385 }}
+        scroll={{ x: 1400 }}
         size="middle"
         bordered={false}
       />
