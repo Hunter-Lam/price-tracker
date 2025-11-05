@@ -110,7 +110,7 @@ the page size persistence feature for the ProductTable $0.0257
 remove tags from the brand and category columns $0.0188
 db is configurable $0.2208
 
-page width $0.0111
+page width $0.0111 $0.1680
 
 order history and evaluation
 
