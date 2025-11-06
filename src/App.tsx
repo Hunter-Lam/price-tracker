@@ -351,14 +351,12 @@ const AppContent: React.FC = () => {
       minHeight: '100vh', 
       padding: '24px 0'
     }}>
-        <div className="container">
-          <Row justify="center">
-            <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+        <div className="app-content">
             <Row justify="space-between" align="middle" style={{ marginBottom: 32 }}>
               <Col>
-                <Typography.Title 
-                  level={1} 
-                  style={{ 
+                <Typography.Title
+                  level={1}
+                  style={{
                     margin: 0
                   }}
                 >
@@ -372,7 +370,7 @@ const AppContent: React.FC = () => {
                 </Space>
               </Col>
             </Row>
-            
+
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <Card
                 title={
@@ -423,8 +421,6 @@ const AppContent: React.FC = () => {
 
               <PriceHistoryChart data={products} />
             </Space>
-            </Col>
-          </Row>
         </div>
 
         <PasteParseModal

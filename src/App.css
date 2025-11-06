@@ -27,7 +27,7 @@ html[data-theme="light"] .app-container {
 }
 
 /* Layout container */
-.container {
+.app-content {
   width: 100%;
   margin: 0 auto;
   padding: 0 24px;
@@ -56,25 +56,25 @@ html[data-theme="light"] .app-container {
 
 /* Responsive design */
 @media (min-width: 1920px) {
-  .container {
+  .app-content {
     padding: 0 48px;
   }
 }
 
 @media (max-width: 1200px) {
-  .container {
+  .app-content {
     padding: 0 16px;
   }
 }
 
 @media (max-width: 768px) {
-  .container {
+  .app-content {
     padding: 0 12px;
   }
 }
 
 @media (max-width: 576px) {
-  .container {
+  .app-content {
     padding: 0 8px;
   }
 }
