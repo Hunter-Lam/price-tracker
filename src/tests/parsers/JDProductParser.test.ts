@@ -280,24 +280,105 @@ describe('JDProductParser', () => {
       expect(result.warnings).toContain('Brand not found');
     });
 
-    it('should parse limited purchase discount', () => {
+    it('should parse limited purchase discount with discount calculation', () => {
       const jdJSON = JSON.stringify({
         wareInfoReadMap: {
-          sku_name: 'Product',
-          cn_brand: 'Brand'
+          sku_name: '蠔油',
+          cn_brand: '李錦記',
+          vender_id: '123456' // Third-party seller makes it a store discount
         },
-        price: { p: '90.00', op: '100.00' },
-        commonLimitInfo: {
-          limitText: '仅限购买1件',
-          limitNum: '1'
+        price: { p: '10.80', op: '15.90' },
+        preference: {
+          preferencePopUp: {
+            morePreference: [
+              {
+                tag: 3,
+                text: '限购',
+                customTag: { p: '10.80' },
+                value: '购买1-5件时可享受单件价￥10.80，超出数量以结算价为准'
+              }
+            ]
+          }
         }
       });
 
       const result = parser.parse(jdJSON);
 
       expect(result.success).toBe(true);
-      // Limited purchase should only be added if there's no other discount explaining the price difference
-      // In this case, there's a price difference, so it will add a 立減 discount instead
+      expect(result.data?.discount).toBeDefined();
+
+      // discount is already a string, parse it
+      const discountStr = result.data?.discount || '[]';
+      const discounts = typeof discountStr === 'string' ? JSON.parse(discountStr) : discountStr;
+      const limitedPurchase = discounts.find((d: any) => d.discountType === '限購');
+
+      expect(limitedPurchase).toBeDefined();
+      expect(limitedPurchase.discountValue).toBe('5件-5.10'); // 5 pieces, 5.10 yuan discount per piece (15.90 - 10.80)
+      expect(limitedPurchase.discountOwner).toBe('店舖');
+    });
+
+    it('should parse limited purchase with minimum quantity pattern', () => {
+      const jdJSON = JSON.stringify({
+        wareInfoReadMap: {
+          sku_name: 'Product',
+          cn_brand: 'Brand'
+        },
+        price: { p: '9499.00', op: '10000.00' },
+        preference: {
+          preferencePopUp: {
+            morePreference: [
+              {
+                tag: 3,
+                text: '限购',
+                customTag: { p: '9499.00' },
+                value: '购买至少1件时可享受单件价￥9499.00，超出数量以结算价为准'
+              }
+            ]
+          }
+        }
+      });
+
+      const result = parser.parse(jdJSON);
+
+      expect(result.success).toBe(true);
+      const discountStr = result.data?.discount || '[]';
+      const discounts = typeof discountStr === 'string' ? JSON.parse(discountStr) : discountStr;
+      const limitedPurchase = discounts.find((d: any) => d.discountType === '限購');
+
+      expect(limitedPurchase).toBeDefined();
+      expect(limitedPurchase.discountValue).toBe('1件-501.00'); // 1 piece, 501 yuan discount (10000 - 9499)
+    });
+
+    it('should not add limited purchase if no original price', () => {
+      const jdJSON = JSON.stringify({
+        wareInfoReadMap: {
+          sku_name: 'Product',
+          cn_brand: 'Brand'
+        },
+        price: { p: '10.80' },
+        preference: {
+          preferencePopUp: {
+            morePreference: [
+              {
+                tag: 3,
+                text: '限购',
+                customTag: { p: '10.80' },
+                value: '购买1-3件时可享受单件价￥10.80'
+              }
+            ]
+          }
+        }
+      });
+
+      const result = parser.parse(jdJSON);
+
+      expect(result.success).toBe(true);
+      const discountStr = result.data?.discount || '[]';
+      const discounts = typeof discountStr === 'string' ? JSON.parse(discountStr) : discountStr;
+      const limitedPurchase = discounts.find((d: any) => d.discountType === '限購');
+
+      // Should not add limited purchase without original price
+      expect(limitedPurchase).toBeUndefined();
     });
 
     it('should normalize Chinese units to English', () => {
