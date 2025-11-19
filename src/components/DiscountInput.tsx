@@ -260,20 +260,19 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
         );
 
       case "限購":
-        // Parse value like "1-185.18" (quantity-amount) or just "1" (quantity only)
+        // Parse value like "3件-10" (quantity-discount per piece)
         let limitQuantity = 1;
-        let limitDiscount = 0;
+        let limitDiscountPerPiece = 0;
 
-        if (typeof value === 'string') {
-          if (value.includes('-')) {
-            const parts = value.split('-');
-            limitQuantity = parseInt(parts[0]) || 1;
-            limitDiscount = parseFloat(parts[1]) || 0;
-          } else {
-            limitQuantity = parseInt(value) || 1;
+        if (typeof value === 'string' && value.includes('件-')) {
+          const match = value.match(/(\d+)件-([\d.]+)/);
+          if (match) {
+            limitQuantity = parseInt(match[1]);
+            limitDiscountPerPiece = parseFloat(match[2]);
           }
         } else if (typeof value === 'number') {
-          limitQuantity = value;
+          // If only a number is provided, treat it as discount amount
+          limitDiscountPerPiece = value;
         }
 
         return (
@@ -286,29 +285,27 @@ const DiscountInput: React.FC<DiscountInputProps> = ({ format, value, onChange }
               value={limitQuantity}
               onChange={(val) => {
                 const newQty = val || 1;
-                const newValue = limitDiscount > 0 ? `${newQty}-${limitDiscount}` : newQty.toString();
+                const newValue = `${newQty}件-${limitDiscountPerPiece}`;
                 onChange?.(newValue);
               }}
             />
-            {limitDiscount > 0 && (
-              <InputNumber
-                min={0}
-                precision={2}
-                placeholder={t('discountInput.reduction')}
-                addonBefore={t('discountInput.reduce')}
-                addonAfter={t('discountInput.currency')}
-                value={limitDiscount}
-                onChange={(val) => {
-                  const newDiscount = val || 0;
-                  const newValue = newDiscount > 0 ? `${limitQuantity}-${newDiscount}` : limitQuantity.toString();
-                  onChange?.(newValue);
-                }}
-              />
-            )}
+            <InputNumber
+              min={0}
+              precision={2}
+              placeholder={t('discountInput.reduction')}
+              addonBefore={t('discountInput.reduce')}
+              addonAfter={t('discountInput.currency')}
+              value={limitDiscountPerPiece}
+              onChange={(val) => {
+                const newDiscount = val || 0;
+                const newValue = `${limitQuantity}件-${newDiscount}`;
+                onChange?.(newValue);
+              }}
+            />
           </Space.Compact>
         );
 
-    default:
+      default:
         return null;
     }
   };

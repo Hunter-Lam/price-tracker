@@ -111,7 +111,7 @@ export class JDProductParser implements IProductInfoParser {
       }
 
       // Extract discount information
-      const discountInfo = this.extractDiscounts(json, price, originalPrice);
+      const discountResult = this.extractDiscounts(json, price, originalPrice);
 
       const formData: Partial<FormData> = {
         title,
@@ -129,8 +129,8 @@ export class JDProductParser implements IProductInfoParser {
         }
       };
 
-      if (discountInfo.length > 0) {
-        formData.discount = discountInfo;
+      if (discountResult.discounts.length > 0) {
+        formData.discount = discountResult.discounts;
       }
 
       return {
@@ -317,18 +317,27 @@ export class JDProductParser implements IProductInfoParser {
       warnings.push('Brand not found');
     }
 
-    // Extract price (use finalPrice.price if available, otherwise use p)
-    const priceStr = json.price?.finalPrice?.price || json.price?.p || json.price?.op || '';
+    // Extract price with priority:
+    // 1. If multiPrice exists (滿件優惠), use multiPrice.price as the discounted price
+    // 2. Otherwise use finalPrice.price (government subsidy price)
+    // 3. Fallback to p (regular price)
+    const hasMultiPrice = json.price?.multiPrice?.price;
+    const priceStr = hasMultiPrice || json.price?.finalPrice?.price || json.price?.p || json.price?.op || '';
     const price = priceStr ? parseFloat(priceStr) : undefined;
     if (!price) {
       warnings.push('Price not found');
     }
 
-    // Extract original price (regularPrice is preferred, then op, m is max price)
-    // If finalPrice exists, use p as the original price before government subsidy
-    const originalPriceStr = json.price?.finalPrice?.price
-      ? (json.price?.p || json.price?.op || '')
-      : (json.price?.regularPrice || json.price?.op || '');
+    // Extract original price:
+    // 1. If multiPrice exists, use op (original price) to show full discount benefit
+    //    e.g., multiPrice 17.41 vs op 21.50 shows savings of 4.09, not vs p 19.90 (only 2.49)
+    // 2. If finalPrice exists, use p as the original price before government subsidy
+    // 3. Otherwise use regularPrice or op
+    const originalPriceStr = hasMultiPrice
+      ? (json.price?.op || json.price?.p || '')
+      : json.price?.finalPrice?.price
+        ? (json.price?.p || json.price?.op || '')
+        : (json.price?.regularPrice || json.price?.op || '');
     const originalPrice = originalPriceStr ? parseFloat(originalPriceStr) : undefined;
 
     // Extract specification from sale_attributes or fallback to size
@@ -420,10 +429,12 @@ export class JDProductParser implements IProductInfoParser {
       };
     }
 
-    // Pattern: "满800元9.5折"
-    const amountDiscountMatch = desc.match(/满(\d+)元([\d.]+)折/);
+    // Pattern: "满800元9.5折" or "满800.01元9.5折" (auto-trim decimal like 800.01→800)
+    const amountDiscountMatch = desc.match(/满([\d.]+)元([\d.]+)折/);
     if (amountDiscountMatch) {
-      const amount = amountDiscountMatch[1];
+      const rawAmount = parseFloat(amountDiscountMatch[1]);
+      // Auto-trim: If amount is like 10.01, round down to 10
+      const amount = Math.floor(rawAmount);
       const discountRate = parseFloat(amountDiscountMatch[2]);
       return {
         discountOwner,
@@ -433,10 +444,10 @@ export class JDProductParser implements IProductInfoParser {
     }
 
     // Pattern: "满1件减2" (quantity-based reduction)
-    const quantityReductionMatch = desc.match(/满(\d+)件减(\d+)/);
+    const quantityReductionMatch = desc.match(/满(\d+)件减([\d.]+)/);
     if (quantityReductionMatch) {
       const quantity = quantityReductionMatch[1];
-      const reduction = quantityReductionMatch[2];
+      const reduction = parseFloat(quantityReductionMatch[2]);
       return {
         discountOwner,
         discountType: '滿件減',
@@ -444,11 +455,15 @@ export class JDProductParser implements IProductInfoParser {
       };
     }
 
-    // Pattern: "满300减30" (amount-based reduction)
-    const thresholdReductionMatch = desc.match(/满(\d+)减(\d+)/);
+    // Pattern: "满300减30" or "满300.01元减30" (auto-trim decimal like 300.01→300)
+    // Note: This pattern must come AFTER the "满X件减X" pattern to avoid conflicts
+    // The "元" is optional
+    const thresholdReductionMatch = desc.match(/满([\d.]+)元?减([\d.]+)/);
     if (thresholdReductionMatch) {
-      const threshold = thresholdReductionMatch[1];
-      const reduction = thresholdReductionMatch[2];
+      const rawThreshold = parseFloat(thresholdReductionMatch[1]);
+      // Auto-trim: If threshold is like 10.01, round down to 10
+      const threshold = Math.floor(rawThreshold);
+      const reduction = parseFloat(thresholdReductionMatch[2]);
       return {
         discountOwner,
         discountType: '滿減',
@@ -581,89 +596,122 @@ export class JDProductParser implements IProductInfoParser {
     };
   }
 
+
   /**
-   * Extract limited purchase discount (限購)
+   * Extract discounts from joinOrderPreference (滿件打折)
+   * Example: "滿2件，總價打9折"
+   * Note: When multiPrice exists, the price/originalPrice are already correctly extracted
+   * from multiPrice.price and price.p, so no need to calculate originalPrice
    */
-  private extractLimitedPurchase(
+  private extractJoinOrderPreference(
     json: JDProductInfo,
-    price: number | undefined,
-    originalPrice: number | undefined,
     discountOwner: '平台' | '店舖',
-    hasGovernmentSubsidy: boolean,
-    hasPromotionDiscount: boolean
-  ): DiscountItem | null {
-    // Don't add limit purchase if government subsidy or promotion discount already exists
-    if (hasGovernmentSubsidy || hasPromotionDiscount) {
-      return null;
+    price: number | undefined,
+    originalPrice: number | undefined
+  ): { discounts: DiscountItem[]; calculatedOriginalPrice?: number } {
+    const discounts: DiscountItem[] = [];
+
+    const joinOrderPrefs = json.preference?.preferencePopUp?.joinOrderPreference;
+    if (!joinOrderPrefs || joinOrderPrefs.length === 0) {
+      return { discounts };
     }
 
-    // First, try to extract from preferencePopUp.morePreference (newer format)
-    const limitPref = json.preference?.preferencePopUp?.morePreference?.find(
-      pref => pref.text === '限购' && pref.tag === 3
-    );
+    for (const pref of joinOrderPrefs) {
+      if (!pref.value) continue;
 
-    if (limitPref) {
-      // Extract from value like "购买至少1件时可享受单件价￥9499，超出数量以结算价为准"
-      const valueMatch = limitPref.value?.match(/购买至少(\d+)件时可享受单件价￥([\d.]+)/);
-      if (valueMatch) {
-        const limitNum = parseInt(valueMatch[1]);
-        const limitPrice = parseFloat(valueMatch[2]);
-
-        if (originalPrice && limitPrice < originalPrice) {
-          const discountAmount = parseFloat((originalPrice - limitPrice).toFixed(2));
-          return {
-            discountOwner,
-            discountType: '限購',
-            discountValue: `${limitNum}-${discountAmount}`
-          };
-        }
+      // Pattern: "滿2件，總價打9折" or "满2件，总价打9折"
+      const match = pref.value.match(/满(\d+)件[，,]总价打([\d.]+)折/i);
+      if (match) {
+        const quantity = parseInt(match[1]);
+        const discountRate = parseFloat(match[2]);
+        discounts.push({
+          discountOwner,
+          discountType: '滿件折',
+          discountValue: `满${quantity}件${discountRate}折`
+        });
       }
     }
 
-    // Fallback: Try commonLimitInfo (older format)
-    if (!json.commonLimitInfo?.limitText) {
+    return { discounts };
+  }
+
+  /**
+   * Extract limited purchase discount from morePreference (限購優惠)
+   * Example: "购买1-3件时可享受单件价￥14.90，超出数量以结算价为准"
+   * Format: "3件-5.10" (3 pieces with 5.10 yuan discount per piece)
+   * Calculates discount amount = originalPrice - limitedPrice
+   */
+  private extractLimitedPurchase(
+    json: JDProductInfo,
+    originalPrice: number | undefined,
+    discountOwner: '平台' | '店舖'
+  ): DiscountItem | null {
+    const morePrefs = json.preference?.preferencePopUp?.morePreference;
+    if (!morePrefs || morePrefs.length === 0) {
       return null;
     }
 
-    const limitText = json.commonLimitInfo.limitText;
-    // Extract limit number from text like "仅限购买1件" or "最多可购买9999件"
-    const limitMatch = limitText.match(/(\d+)件/);
-    if (!limitMatch) {
+    // Look for tag=3 (限購 type) in morePreference
+    const limitPref = morePrefs.find(pref => pref.tag === 3 && pref.text === '限购');
+    if (!limitPref || !limitPref.value) {
       return null;
     }
 
-    const limitNum = parseInt(limitMatch[1]);
-
-    // Only create 限購 discount for meaningful limits (< 100)
-    // Values like 9999 are effectively no limit at all
-    if (limitNum >= 100) {
+    // Extract limited purchase price from customTag.p
+    const limitedPriceStr = limitPref.customTag?.p;
+    if (!limitedPriceStr) {
       return null;
     }
 
-    // If there's also a price difference, store it as "quantity-amount" format
-    // e.g., "1-185.18" means limit 1 item with 185.18 discount
-    let discountValue: string | number = limitNum.toString();
-    if (price && originalPrice && price < originalPrice) {
-      const discountAmount = parseFloat((originalPrice - price).toFixed(2));
-      discountValue = `${limitNum}-${discountAmount}`;
+    const limitedPrice = parseFloat(limitedPriceStr);
+    if (isNaN(limitedPrice) || limitedPrice <= 0) {
+      return null;
     }
 
+    // Extract quantity from value pattern
+    // Pattern: "购买1-3件时可享受单件价￥14.90，超出数量以结算价为准"
+    // or "购买至少1件时可享受单件价￥9499，超出数量以结算价为准"
+    const rangeMatch = limitPref.value.match(/购买(\d+)-(\d+)件时可享受单件价￥([\d.]+)/i);
+    const minMatch = limitPref.value.match(/购买至少(\d+)件时可享受单件价￥([\d.]+)/i);
+
+    let quantity = 1;
+    if (rangeMatch) {
+      // Use the maximum quantity from the range (e.g., "1-3件" → 3)
+      quantity = parseInt(rangeMatch[2]);
+    } else if (minMatch) {
+      // Use the minimum quantity (e.g., "至少1件" → 1)
+      quantity = parseInt(minMatch[1]);
+    }
+
+    // Calculate discount amount per piece
+    // If we have originalPrice, calculate: discountPerPiece = originalPrice - limitedPrice
+    // Otherwise, we can't calculate the discount amount
+    if (!originalPrice || originalPrice <= limitedPrice) {
+      // Can't calculate discount without original price, or if limited price is higher
+      return null;
+    }
+
+    const discountPerPiece = originalPrice - limitedPrice;
+
+    // Format: "3件-5.10" (3 pieces with 5.10 yuan discount per piece)
     return {
       discountOwner,
       discountType: '限購',
-      discountValue: discountValue
+      discountValue: `${quantity}件-${discountPerPiece.toFixed(2)}`
     };
   }
 
   /**
    * Extract all discount information
+   * Returns both discounts and potentially calculated originalPrice
    */
   private extractDiscounts(
     json: JDProductInfo,
     price: number | undefined,
     originalPrice: number | undefined
-  ): DiscountItem[] {
+  ): { discounts: DiscountItem[]; calculatedOriginalPrice?: number } {
     const discountInfo: DiscountItem[] = [];
+    let calculatedOriginalPrice: number | undefined;
 
     // Determine discount owner based on vender type
     const discountOwner = this.getDiscountOwner(json);
@@ -688,27 +736,26 @@ export class JDProductParser implements IProductInfoParser {
       }
     }
 
-    const hasPromotionDiscount = promotionDiscounts.length > 0;
+    // 3. Extract joinOrderPreference discounts (滿件打折)
+    const joinOrderResult = this.extractJoinOrderPreference(json, discountOwner, price, originalPrice);
+    discountInfo.push(...joinOrderResult.discounts);
 
-    // 3. Check for limited purchase discount (限購)
-    const limitedPurchase = this.extractLimitedPurchase(
-      json,
-      price,
-      originalPrice,
-      discountOwner,
-      hasGovernmentSubsidy,
-      hasPromotionDiscount
-    );
+    // 4. Extract limited purchase discount from morePreference (限購優惠)
+    const limitedPurchase = this.extractLimitedPurchase(json, originalPrice, discountOwner);
     if (limitedPurchase) {
       discountInfo.push(limitedPurchase);
     }
 
-    // 4. Only add price difference discount (立減) if no other discounts explain the price difference
-    const hasLimitPurchase = limitedPurchase !== null;
+    const hasPromotionDiscount = promotionDiscounts.length > 0;
+    const hasJoinOrderDiscount = joinOrderResult.discounts.length > 0;
+    const hasLimitedPurchase = limitedPurchase !== null;
+
+    // 5. Only add price difference discount (立減) if no other discounts explain the price difference
     if (
-      !hasLimitPurchase &&
       !hasGovernmentSubsidy &&
       !hasPromotionDiscount &&
+      !hasJoinOrderDiscount &&
+      !hasLimitedPurchase &&
       price &&
       originalPrice &&
       price < originalPrice
@@ -721,6 +768,6 @@ export class JDProductParser implements IProductInfoParser {
       });
     }
 
-    return discountInfo;
+    return { discounts: discountInfo, calculatedOriginalPrice };
   }
 }
