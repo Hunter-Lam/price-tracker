@@ -2,15 +2,17 @@ export const SOURCES = ["URL", "商鋪"] as const;
 export const SOURCE_KEYS = ["url", "shop"] as const;
 
 export const CATEGORIES = [
-  "電器", "數碼", "家電", "家俱", "廚用", "衞浴",
-  "家紡", "服飾", "書籍", "食品", "醫用",
-  "藥用", "水果", "零食", "飲品", "五金", "糧油"
+  "食品", "零食", "飲品", "糧油",
+  "藥用", "醫用", "數碼", "服飾",
+  "衞浴", "廚用",
+  "家紡", "電器", "家電", "家俱", "書籍", "五金", "水果"
 ] as const;
 
 export const CATEGORY_KEYS = [
-  "electronics", "digital", "appliances", "furniture", "kitchen", "bathroom",
-  "textiles", "apparel", "books", "food", "medical",
-  "medicine", "fruits", "snacks", "beverages", "hardware", "grains"
+  "food", "snacks", "beverages", "grains",
+  "medicine", "medical", "digital", "apparel",
+  "bathroom", "kitchen",
+  "textiles", "electronics", "appliances", "furniture", "books", "hardware", "fruits"
 ] as const;
 
 export const DISCOUNT_ORGANIZERS = ["政府", "平台", "店舖", "支付"] as const;
