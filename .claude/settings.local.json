@@ -35,7 +35,12 @@
       "Bash(yarn add:*)",
       "Bash(yarn test:run)",
       "WebFetch(domain:v2.tauri.app)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(node:*)",
+      "Bash(yarn build)",
+      "Bash(yarn tsc:*)",
+      "Bash(yarn test:*)",
+      "Bash(yarn test:run:*)"
     ],
     "deny": [],
     "ask": []
