@@ -40,7 +40,8 @@
       "Bash(yarn build)",
       "Bash(yarn tsc:*)",
       "Bash(yarn test:*)",
-      "Bash(yarn test:run:*)"
+      "Bash(yarn test:run:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
