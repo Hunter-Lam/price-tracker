@@ -41,7 +41,11 @@
       "Bash(yarn tsc:*)",
       "Bash(yarn test:*)",
       "Bash(yarn test:run:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(tree:*)",
+      "WebFetch(domain:docs.scrapy.org)",
+      "WebFetch(domain:playwright.dev)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
