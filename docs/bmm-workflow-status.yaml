@@ -23,7 +23,7 @@ field_type: "brownfield"
 workflow_path: ".bmad/bmm/workflows/workflow-status/paths/method-brownfield.yaml"
 workflow_status:
   # Phase 0: Documentation (Prerequisite for undocumented brownfield)
-  document-project: required
+  document-project: docs/index.md
 
   # Phase 1: Discovery (Optional - user selected)
   brainstorm-project: skipped
