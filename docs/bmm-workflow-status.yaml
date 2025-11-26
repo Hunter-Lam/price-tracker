@@ -27,7 +27,7 @@ workflow_status:
 
   # Phase 1: Discovery (Optional - user selected)
   brainstorm-project: skipped
-  research: optional
+  research: docs/technical-research-report.md
   product-brief: skipped
 
   # Phase 2: Planning
