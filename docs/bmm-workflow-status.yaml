@@ -31,7 +31,7 @@ workflow_status:
   product-brief: skipped
 
   # Phase 2: Planning
-  prd: required
+  prd: docs/prd.md
   validate-prd: optional
   create-design: conditional
 
